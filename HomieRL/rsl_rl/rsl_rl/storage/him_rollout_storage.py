@@ -33,19 +33,20 @@ import numpy as np
 
 from rsl_rl.utils import split_and_pad_trajectories
 
+# rollout负责把一段采样轨迹储存，提供给PPO做批量训练和接口（数据缓冲和优势估计层）
 class HIMRolloutStorage:
-    class Transition:
+    class Transition: # transition是rollout buffer的单步数据包，打包一次交互产生的关键信息，用于PPO更新
         def __init__(self):
-            self.observations = None
+            self.observations = None # actor的输入
             self.critic_observations = None
-            self.actions = None
-            self.rewards = None
+            self.actions = None # 采样的动作
+            self.rewards = None # 环境反馈
             self.dones = None
-            self.values = None
+            self.values = None # 当步critic估计的V(s)
             self.actions_log_prob = None
-            self.action_mean = None
+            self.action_mean = None # 当前的策略分布参数
             self.action_sigma = None
-            self.next_critic_observations = None
+            self.next_critic_observations = None 
         
         def clear(self):
             self.__init__()
@@ -100,18 +101,30 @@ class HIMRolloutStorage:
     def clear(self):
         self.step = 0
 
-    def compute_returns(self, last_values, gamma, lam):
-        num_transitions_per_env = self.num_transitions_per_env // 2
+    def compute_returns(self, last_values, gamma, lam): # 计算广义优势估计（GAE）
+        # 计算优势和回报的步骤：
+        # 1. 从后向前遍历时间步（当前优势的计算依赖未来的值）
+        # 2. 计算TD误差 
+        # 3. 计算广义优势 
+        # 4. 计算回报 
+        # 5. 对优势归一化
+        num_transitions_per_env = self.num_transitions_per_env // 2 # 因为storage把容量翻倍了，同时存了原始轨迹—和对称数据
         advantage = 0
         resize = lambda x: x.view(num_transitions_per_env, 2, -1, 1)
+        # 从后向前遍历所有时间步
         for step in reversed(range(num_transitions_per_env)):
+            # 如果是最后一步，使用传入的last_values作为下一个值
             if step == num_transitions_per_env - 1:
                 next_values = last_values
             else:
-                next_values = resize(self.values)[step + 1]
+                next_values = resize(self.values)[step + 1] # 否则使用下一个值
+            # 非终止状态掩码，如果不是终止状态则为1，否则为0
             next_is_not_terminal = 1.0 - resize(self.dones)[step].float()
+            # 计算TD(time difference error)误差：r_t + gamma * V(s_{t+1}) - V(s_t)
             delta = resize(self.rewards)[step] + next_is_not_terminal * gamma * next_values - resize(self.values)[step]
+            # 计算广义优势：A(s_t, a_t) = delta_t + gamma * lambda * A(s_{t+1}, a_{t+1})
             advantage = delta + next_is_not_terminal * gamma * lam * advantage
+            # 计算回报：R_t = A(s_t, a_t) + V(s_t)
             resize(self.returns)[step] = advantage + resize(self.values)[step]
         # Compute and normalize the advantages
         self.advantages = self.returns - self.values
@@ -146,12 +159,12 @@ class HIMRolloutStorage:
         old_mu = self.mu.flatten(0, 1)
         old_sigma = self.sigma.flatten(0, 1)
 
-        for epoch in range(num_epochs):
-            for i in range(num_mini_batches):
+        for epoch in range(num_epochs): # 遍历所有小批量
+            for i in range(num_mini_batches): # 选择当前小批量的索引范围
 
                 start = i*mini_batch_size
                 end = (i+1)*mini_batch_size
-                batch_idx = indices[start:end]
+                batch_idx = indices[start:end] # 生成小批量数据
 
                 obs_batch = observations[batch_idx]
                 next_critic_observations_batch = next_critic_observations[batch_idx]
@@ -163,5 +176,6 @@ class HIMRolloutStorage:
                 advantages_batch = advantages[batch_idx]
                 old_mu_batch = old_mu[batch_idx]
                 old_sigma_batch = old_sigma[batch_idx]
+                # 返回：观测、特权观测、动作、目标价值、优势、回报、旧动作对数概率、旧均值、旧标准差、隐藏状态(None,None)、掩码(None)、RND状态
                 yield obs_batch, critic_observations_batch, actions_batch, next_critic_observations_batch, target_values_batch, advantages_batch, returns_batch, \
                        old_actions_log_prob_batch, old_mu_batch, old_sigma_batch

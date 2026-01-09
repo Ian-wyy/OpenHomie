@@ -36,7 +36,7 @@ from rsl_rl.modules import HIMActorCritic
 from rsl_rl.storage import HIMRolloutStorage
 
 class HIMPPO:
-    actor_critic: HIMActorCritic
+    actor_critic: HIMActorCritic # 策略价值网络
     def __init__(self,
                  actor_critic,
                  use_flip = True,
@@ -92,12 +92,13 @@ class HIMPPO:
         self.actor_critic.train()
 
     def act(self, obs, critic_obs):
-        # Compute the actions and values
-        self.transition.actions = self.actor_critic.act(obs).detach()
-        self.transition.values = self.actor_critic.evaluate(critic_obs).detach()
-        self.transition.actions_log_prob = self.actor_critic.get_actions_log_prob(self.transition.actions).detach()
-        self.transition.action_mean = self.actor_critic.action_mean.detach()
-        self.transition.action_sigma = self.actor_critic.action_std.detach()
+        # Compute the actions and values，根据当前观测生成动作，同时记录相关信息
+        # 这里调用了ActorCritic模块的act()，他自己内部再调用update_distribution()得到action_mean/std，存到transition
+        self.transition.actions = self.actor_critic.act(obs).detach() # 得到动作
+        self.transition.values = self.actor_critic.evaluate(critic_obs).detach() # 得到value，评估状态价值
+        self.transition.actions_log_prob = self.actor_critic.get_actions_log_prob(self.transition.actions).detach() # 计算动作对数概率
+        self.transition.action_mean = self.actor_critic.action_mean.detach() # 动作均值
+        self.transition.action_sigma = self.actor_critic.action_std.detach() # 动作标准差
         # need to record obs and critic_obs before env.step()
         self.transition.observations = obs
         self.transition.critic_observations = critic_obs
@@ -115,11 +116,12 @@ class HIMPPO:
         return self.transition.actions
     
     def process_env_step(self, rewards, dones, infos, next_critic_obs):
+        # 处理环境返回的结果
         self.transition.next_critic_observations = next_critic_obs.clone()
         self.transition.rewards = rewards.clone()
         self.transition.dones = dones
         
-        next_critic_obs_sym = self.flip_g1_critic_obs(next_critic_obs)
+        next_critic_obs_sym = self.flip_g1_critic_obs(next_critic_obs) # 对称化
         self.transition_sym.next_critic_observations = next_critic_obs_sym.clone()
         self.transition_sym.rewards = rewards.clone()
         self.transition_sym.dones = dones
@@ -134,7 +136,7 @@ class HIMPPO:
         self.transition_sym.clear()
         self.actor_critic.reset(dones)
     
-    def compute_returns(self, last_critic_obs):
+    def compute_returns(self, last_critic_obs): # 优势估计
         last_values= self.actor_critic.evaluate(last_critic_obs).detach()
         self.storage.compute_returns(last_values, self.gamma, self.lam)
 
@@ -173,7 +175,7 @@ class HIMPPO:
                             param_group['lr'] = self.learning_rate
 
                 #Estimator Update
-                if self.use_flip:
+                if self.use_flip: # 用来对称性
                     flipped_obs_batch = self.flip_g1_actor_obs(obs_batch)
                     flipped_next_critic_obs_batch = self.flip_g1_critic_obs(next_critic_obs_batch)
                     estimator_update_obs_batch =  torch.cat((obs_batch, flipped_obs_batch), dim=0)
@@ -181,6 +183,7 @@ class HIMPPO:
                 else:
                     estimator_update_obs_batch = obs_batch
                     estimator_update_next_critic_obs_batch = next_critic_obs_batch
+                # 额外增加actor，cirtic symmetry loss
                 estimation_loss, swap_loss = self.actor_critic.update_estimator(estimator_update_obs_batch, estimator_update_next_critic_obs_batch, lr=self.learning_rate)
                 
                 # Surrogate loss

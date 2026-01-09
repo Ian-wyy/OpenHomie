@@ -33,7 +33,7 @@ import os
 from datetime import datetime
 
 import isaacgym
-from legged_gym.envs import *
+from legged_gym.envs import *  # 这一句会自动执行envs里面的__init__.py,在task_registry注册g1
 from legged_gym.utils import get_args, task_registry
 import torch
 

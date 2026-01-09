@@ -44,7 +44,7 @@ from rsl_rl.env import VecEnv
 from rsl_rl.utils import store_code_state
 
 
-class HIMOnPolicyRunner:
+class HIMOnPolicyRunner: # 调用链：Runner -> PPO -> ActorCritic
 
     def __init__(self,
                  env: VecEnv,
@@ -52,6 +52,8 @@ class HIMOnPolicyRunner:
                  log_dir=None,
                  device='cpu'):
 
+        # 先读取train config里面的配置
+        # 这里调用的是LeggedRobotCfg, LeggedRobotCfgPPO
         self.cfg=train_cfg["runner"]
         self.alg_cfg = train_cfg["algorithm"]
         self.policy_cfg = train_cfg["policy"]
@@ -68,6 +70,7 @@ class HIMOnPolicyRunner:
         self.actor_history_length = self.env.actor_history_length
         self.critic_history_length = self.env.critic_history_length
         actor_critic_class = eval(self.cfg["policy_class_name"]) # HIMActorCritic
+        # 构造网络
         actor_critic: HIMActorCritic = actor_critic_class( 
                                                         self.env.num_obs,
                                                         num_critic_obs,
@@ -78,6 +81,7 @@ class HIMOnPolicyRunner:
                                                         self.env.num_lower_dof,
                                                         **self.policy_cfg).to(self.device)
         alg_class = eval(self.cfg["algorithm_class_name"]) # HIMPPO
+        # 构造算法，这里调用了HIMPPO
         self.alg: HIMPPO = alg_class(actor_critic, device=self.device, **self.alg_cfg)
         self.num_steps_per_env = self.cfg["num_steps_per_env"]
         self.save_interval = self.cfg["save_interval"]
@@ -95,7 +99,7 @@ class HIMOnPolicyRunner:
 
         _, _ = self.env.reset()
     
-    def learn(self, num_learning_iterations, init_at_random_ep_len=False):
+    def learn(self, num_learning_iterations, init_at_random_ep_len=False): # 主循环
         # initialize writer
         if self.log_dir is not None and self.writer is None:
             self.logger_type = self.cfg.get("logger", "wandb")
@@ -113,8 +117,10 @@ class HIMOnPolicyRunner:
             
         if init_at_random_ep_len:
             self.env.episode_length_buf = torch.randint_like(self.env.episode_length_buf, high=int(self.env.max_episode_length))
-        obs = self.env.get_observations()
-        privileged_obs = self.env.get_privileged_observations()
+        # 这里的get_observations()和get_privileged_observations()在BaseTask中实现
+        # 他们return的内容“obs_buf”在legged_robot.py的compute_observation()中被调用
+        obs = self.env.get_observations() # 先获取observation，actor用的是obs
+        privileged_obs = self.env.get_privileged_observations() # critic用的是privileged_obs，得到的信息更丰富
         critic_obs = privileged_obs if privileged_obs is not None else obs
         obs, critic_obs = obs.to(self.device), critic_obs.to(self.device)
         self.alg.actor_critic.train() # switch to train mode (for dropout for example)
@@ -129,11 +135,12 @@ class HIMOnPolicyRunner:
         tot_iter = start_iter + num_learning_iterations
         for it in range(start_iter, tot_iter):
             start = time.time()
-            # Rollout
+            # Rollout，采样，收集一段trajectory
             with torch.inference_mode():
-                for i in range(self.num_steps_per_env):
+                for i in range(self.num_steps_per_env): # 多少步由num_steps_per_env决定
                     actions = self.alg.act(obs, critic_obs)
-                    obs, privileged_obs, rewards, dones, infos, termination_ids, termination_privileged_obs = self.env.step(actions)
+                    # 执行legged_robot中的step()，采样上肢动作拼接下肢动作进行action，进行物理仿真，计算rewards，采集数据
+                    obs, privileged_obs, rewards, dones, infos, termination_ids, termination_privileged_obs = self.env.step(actions) # 环境交互
 
                     critic_obs = privileged_obs if privileged_obs is not None else obs
                     obs, critic_obs, rewards, dones = obs.to(self.device), critic_obs.to(self.device), rewards.to(self.device), dones.to(self.device)
@@ -143,6 +150,7 @@ class HIMOnPolicyRunner:
                     next_critic_obs = critic_obs.clone().detach()
                     next_critic_obs[termination_ids] = termination_privileged_obs.clone().detach()
 
+                    # 把数据给PPO buffer，定义在him_ppo.py的process_env_step()
                     self.alg.process_env_step(rewards, dones, infos, next_critic_obs)
                 
                     if self.log_dir is not None:
@@ -163,7 +171,8 @@ class HIMOnPolicyRunner:
                 # Learning step
                 start = stop
                 self.alg.compute_returns(critic_obs)
-                
+               
+            # 进行update 
             mean_value_loss, mean_surrogate_loss, mean_estimation_loss, mean_swap_loss, mean_actor_sym_loss, mean_critic_sym_loss = self.alg.update()
             stop = time.time()
             learn_time = stop - start

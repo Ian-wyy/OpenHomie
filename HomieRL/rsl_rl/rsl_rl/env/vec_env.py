@@ -33,19 +33,22 @@ import torch
 from typing import Tuple, Union
 
 # minimal interface of the environment
+# 向量化环境的最小接口（抽象基类），统一规范了环境和算法交互API
 class VecEnv(ABC):
     num_envs: int
     num_obs: int
     num_privileged_obs: int
     num_actions: int
-    max_episode_length: int
+    max_episode_length: int # 每个环境当前episode已走的步数
     privileged_obs_buf: torch.Tensor
-    obs_buf: torch.Tensor 
-    rew_buf: torch.Tensor
+    obs_buf: torch.Tensor  # 当前观测批次的缓存
+    rew_buf: torch.Tensor # 当前步奖励
     reset_buf: torch.Tensor
     episode_length_buf: torch.Tensor # current episode duration
     extras: dict
-    device: torch.device
+    device: torch.device # 计算设备（CPU/GPU)
+    # 统一的环境与算法交互的函数，不关心具体的环境实现
+    # 在这个项目中在legged_robot.py中被定义
     @abstractmethod
     def step(self, actions: torch.Tensor) -> Tuple[torch.Tensor, Union[torch.Tensor, None], torch.Tensor, torch.Tensor, dict]:
         pass

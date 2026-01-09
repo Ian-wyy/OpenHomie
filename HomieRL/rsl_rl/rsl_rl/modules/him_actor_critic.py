@@ -214,8 +214,8 @@ class HIMActorCritic(nn.Module):
             actor_input = torch.cat((obs_history[:,-(self.num_height_points + self.num_one_step_obs):-self.num_height_points], vel, dynamic_latent, terrain_latent), dim=-1)
         else:
             actor_input = torch.cat((obs_history[:,-self.num_one_step_obs:], vel, dynamic_latent), dim=-1)
-        action_mean = self.actor(actor_input)
-        self.distribution = Normal(action_mean, action_mean*0. + self.std)
+        action_mean = self.actor(actor_input) # 通过actor_input计算action_mean
+        self.distribution = Normal(action_mean, action_mean*0. + self.std) # 建立动作分布
 
     def act(self, obs_history=None, **kwargs):
         self.update_distribution(obs_history)
@@ -224,7 +224,7 @@ class HIMActorCritic(nn.Module):
     def get_actions_log_prob(self, actions):
         return self.distribution.log_prob(actions).sum(dim=-1)
 
-    def act_inference(self, obs_history, observations=None):
+    def act_inference(self, obs_history, observations=None): # 推理的时候只需要均值
         with torch.no_grad():
             vel, dynamic_latent = self.estimator(obs_history[:, 0:self.actor_proprioceptive_obs_length])
         if self.actor_use_height:
@@ -237,7 +237,7 @@ class HIMActorCritic(nn.Module):
 
     def evaluate(self, critic_observations, **kwargs):
         value = self.critic(critic_observations)
-        return value
+        return value # 直接返回critic网络估计的价值V(s)
     
     def update_estimator(self, obs_history, next_critic_obs, lr=None):
         return self.estimator.update(obs_history[:, 0:self.actor_proprioceptive_obs_length], next_critic_obs[:, 0:self.critic_proprioceptive_obs_length], lr)

@@ -73,6 +73,8 @@ def euler_from_quaternion(quat_angle):
     return roll_x.unsqueeze(1), pitch_y.unsqueeze(1), yaw_z.unsqueeze(1)
 
 class LeggedRobot(BaseTask):
+    # 解析config，把config里面的各类参数转化成字段
+    # 调用BaseTask的init初始化仿真，地形，actor
     def __init__(self, cfg: LeggedRobotCfg, sim_params, physics_engine, sim_device, headless):
         """ Parses the provided config file,
             calls create_sim() (which creates, simulation, terrain and environments),
@@ -107,29 +109,39 @@ class LeggedRobot(BaseTask):
         self._prepare_reward_function()
         self.init_done = True
 
-    def step(self, actions):
+    # 关键循环：step -> action -> physics -> new obs
+    def step(self, actions): # 这里会接收一个下肢动作action，还需要采样一个upper action拼接
+        # step函数：一次policy推理，仿真步
         """ Apply actions, simulate, call self.post_physics_step()
 
         Args:
             actions (torch.Tensor): Tensor of shape (num_envs, num_actions_per_env)
         """
-        clip_actions = self.cfg.normalization.clip_actions
+        # 这里lower body的action，后面会拼接一个upper body的action
+        clip_actions = self.cfg.normalization.clip_actions # 把动作限制在[-clip,clid]之间，防止网络爆炸
         if (self.common_step_counter % self.cfg.domain_rand.upper_interval == 0):
+            # 周期性更新：目标上肢术随机动作
             # (NOTE) implementation of upper-body curriculum
+            # 这就是论文里面的上肢动作采样空间不断增大，每次action_curriculum_ratio增加0.05
             self.random_upper_ratio = min(self.action_curriculum_ratio, 1.0)
+            # 非线性银蛇
             uu = torch.rand(self.num_envs, self.num_actions - self.num_lower_dof, device=self.device)
             self.random_upper_ratio = -1.0 / (20 * (1-self.random_upper_ratio*0.99))*torch.log(1 - uu + uu * np.exp(-20 * (1-self.random_upper_ratio*0.99)))
+            # 乘以每个关节自己的随机比例
             self.random_joint_ratio = self.random_upper_ratio * torch.rand(self.num_envs, self.num_actions - self.num_lower_dof).to(self.device)
+            # 采样一个上肢动作，同时按照action_min/max定方向
+            # 生成一个维度是：“并行环境数量x上半身关节数”的(0,1]随机矩阵
             rand_pos = torch.rand(self.num_envs, self.num_actions - self.num_lower_dof, device=self.device) - 0.5
             self.random_upper_actions = ((self.action_min[:, self.num_lower_dof:] * (rand_pos >= 0)) + (self.action_max[:, self.num_lower_dof:] * (rand_pos < 0) ))* self.random_joint_ratio
             self.delta_upper_actions = (self.random_upper_actions - self.current_upper_actions) / (self.cfg.domain_rand.upper_interval)
-        self.current_upper_actions += self.delta_upper_actions
-        actions = torch.cat((actions, self.current_upper_actions), dim=-1)
-        self.actions = torch.clip(actions, -clip_actions, clip_actions).to(self.device)
-        self.origin_actions[:] = self.actions[:]
+        #因为上半身的随机动作是每upper_interval步才重新随机，在几步之间都是线性插值一点点达到之前采集的action
+        self.current_upper_actions += self.delta_upper_actions # 这里是把action分成了upper_interval步，慢慢加入，更加平滑
+        actions = torch.cat((actions, self.current_upper_actions), dim=-1) # 拼接上肢和下肢动作
+        self.actions = torch.clip(actions, -clip_actions, clip_actions).to(self.device) # 把action的范围限制在上下界之间，相当于归一化
+        self.origin_actions[:] = self.actions[:] # 把当前动作复制到origin里面缓存，可以在post_physics_step对比诊断
         self.delayed_actions = self.actions.clone().view(1, self.num_envs, self.num_actions).repeat(self.cfg.control.decimation, 1, 1)
         delay_steps = torch.randint(0, self.cfg.control.decimation, (self.num_envs, 1), device=self.device)
-        if self.cfg.domain_rand.delay:
+        if self.cfg.domain_rand.delay: # 这里每个env随机一个延迟步数，第i个env会在第delay_steps[i]个物理小步“切换到新动作”
             for i in range(self.cfg.control.decimation):
                 self.delayed_actions[i] = self.last_actions + (self.actions - self.last_actions) * (i >= delay_steps)
                 
@@ -137,16 +149,17 @@ class LeggedRobot(BaseTask):
         if self.cfg.domain_rand.randomize_joint_injection:
             self.joint_injection = torch_rand_float(self.cfg.domain_rand.joint_injection_range[0], self.cfg.domain_rand.joint_injection_range[1], (self.num_envs, self.num_dof), device=self.device) * self.torque_limits.unsqueeze(0)
         # step physics and render each frame
+        # 每调用一次step()，环境会推进decimation次物理小步
         self.render()
         for _ in range(self.cfg.control.decimation):
             
-            self.torques = self._compute_torques(self.actions).view(self.torques.shape)
+            self.torques = self._compute_torques(self.actions).view(self.torques.shape) # 计算torque等下来simulate
             # upper-body with position control; lower-body with force control;
             self.gym.set_dof_actuation_force_tensor(self.sim, gymtorch.unwrap_tensor(self.torques))
             self.gym.set_dof_position_target_tensor(self.sim, gymtorch.unwrap_tensor(self.torques))
-            self.gym.simulate(self.sim)
+            self.gym.simulate(self.sim) # 仿真
             self.gym.fetch_results(self.sim, True)
-            self.gym.refresh_dof_state_tensor(self.sim)
+            self.gym.refresh_dof_state_tensor(self.sim) # 把最新关节状态刷新到torch tensor
 
         termination_ids, termination_priveleged_obs = self.post_physics_step()
 
@@ -157,10 +170,13 @@ class LeggedRobot(BaseTask):
             self.privileged_obs_buf = torch.clip(self.privileged_obs_buf, -clip_obs, clip_obs)
         return self.obs_buf, self.privileged_obs_buf, self.rew_buf, self.reset_buf, self.extras, termination_ids, termination_priveleged_obs
 
-    def post_physics_step(self):
+    def post_physics_step(self): # step()负责执行动作+推进物理，post_physics_step()负责把新状态变成obs/reward/...统计量
+        # 物理后处理，刷新root_state,contact force,rigid body state
+        # 计算姿态，速度，重力等
         """ check terminations, compute observations and rewards
             calls self._post_physics_step_callback() for common computations 
         """
+        # 先同步based， force，state的张量
         self.gym.refresh_actor_root_state_tensor(self.sim)
         self.gym.refresh_net_contact_force_tensor(self.sim)
         self.gym.refresh_rigid_body_state_tensor(self.sim)
@@ -168,11 +184,12 @@ class LeggedRobot(BaseTask):
         self.common_step_counter += 1
 
         # prepare quantities
+        # 把世界坐标系的量转换到机器人自己的坐标系，更适合观测和作为reward #？
         self.base_quat[:] = self.root_states[:, 3:7]
         self.roll, self.pitch, self.yaw = euler_from_quaternion(self.base_quat)
         self.base_lin_vel[:] = quat_rotate_inverse(self.base_quat, self.root_states[:, 7:10])
         self.base_ang_vel[:] = quat_rotate_inverse(self.base_quat, self.root_states[:, 10:13])
-        self.projected_gravity[:] = quat_rotate_inverse(self.base_quat, self.gravity_vec)
+        self.projected_gravity[:] = quat_rotate_inverse(self.base_quat, self.gravity_vec) # 把重力投影到body frame
         self.base_lin_acc = (self.root_states[:, 7:10] - self.last_root_vel[:, :3]) / self.dt
         
         self.feet_pos[:] = self.rigid_body_states.view(self.num_envs, self.num_bodies, 13)[:, self.feet_indices, 0:3]
@@ -180,8 +197,8 @@ class LeggedRobot(BaseTask):
         self.feet_vel[:] = self.rigid_body_states.view(self.num_envs, self.num_bodies, 13)[:, self.feet_indices, 7:10]
         
         # compute contact related quantities
-        contact = torch.norm(self.contact_forces[:, self.feet_indices], dim=-1) > 1.0
-        self.contact_filt = torch.logical_or(contact, self.last_contacts) 
+        contact = torch.norm(self.contact_forces[:, self.feet_indices], dim=-1) > 1.0 # 根据力判断是否接触
+        self.contact_filt = torch.logical_or(contact, self.last_contacts) # 滤波防检测抖动
         self.last_contacts = contact
         self.first_contacts = (self.feet_air_time >= self.dt) * self.contact_filt
         self.feet_air_time += self.dt
@@ -190,16 +207,20 @@ class LeggedRobot(BaseTask):
         
         # compute joint power
         joint_power = torch.abs(self.torques * self.dof_vel).unsqueeze(1)
-        self.joint_powers = torch.cat((self.joint_powers[:, 1:], joint_power), dim=1)
+        self.joint_powers = torch.cat((self.joint_powers[:, 1:], joint_power), dim=1) # 记录过去几帧的power，丢掉最老的一帧
 
         self._post_physics_step_callback()
 
         # compute observations, rewards, resets, ...
+        # terminate -> reward -> reset（重置一部分已终止的环境实例）-> observation
         self.check_termination()
-        self.compute_reward()
+        self.compute_reward() # 奖励汇总，每个reward项都有单独函数，最后按cfg.rewards.scale加权求和
         env_ids = self.reset_buf.nonzero(as_tuple=False).flatten()
         termination_privileged_obs = self.compute_termination_observations(env_ids)
         self.reset_idx(env_ids)
+        # 观测凭借，这里还要处理历史帧堆叠
+        # 把位置，速度，指令，上一动作拼接成向量
+        # privileged obs给critic用
         self.compute_observations() # in some cases a simulation step might be required to refresh some obs (for example body positions)
 
         self.last_last_actions[:] = self.last_actions[:]
@@ -296,9 +317,10 @@ class LeggedRobot(BaseTask):
         """
         self.rew_buf[:] = 0.
         for i in range(len(self.reward_functions)):
-            name = self.reward_names[i]
-            rew = self.reward_functions[i]() * self.reward_scales[name]
-            if torch.isnan(rew).any():
+            name = self.reward_names[i] # reward名字和计算函数是自动对应的，在配置rewards.scales里
+            # 每个name对应了一项_reward_xxx()
+            rew = self.reward_functions[i]() * self.reward_scales[name] # 计算每个reward然后按照scale相加
+            if torch.isnan(rew).any(): # 防止reward出NaN
                 import ipdb; ipdb.set_trace()
             self.rew_buf += rew
             self.episode_sums[name] += rew
@@ -666,6 +688,7 @@ class LeggedRobot(BaseTask):
 
     #----------------------------------------
     def _init_buffers(self):
+        # buffer是用来暂存环境状态，动作，奖励等中间结果的张量
         """ Initialize torch tensors which will contain simulation states and processed quantities
         """
         # get gym GPU state tensors
@@ -679,6 +702,7 @@ class LeggedRobot(BaseTask):
         self.gym.refresh_rigid_body_state_tensor(self.sim)
 
         # create some wrapper tensors for different slices
+        # 状态buffer
         self.root_states = gymtorch.wrap_tensor(actor_root_state)
         self.dof_state = gymtorch.wrap_tensor(dof_state_tensor)
         self.rigid_body_states = gymtorch.wrap_tensor(rigid_body_state).view(self.num_envs, self.num_bodies, 13)
@@ -693,6 +717,7 @@ class LeggedRobot(BaseTask):
         self.contact_forces = gymtorch.wrap_tensor(net_contact_forces).view(self.num_envs, -1, 3) # shape: num_envs, num_bodies, xyz axis
 
         # initialize some data used later on
+        # 动作buffer/观测buffer/...
         self.common_step_counter = 0
         self.extras = {}
         self.gravity_vec = to_torch(get_axis_params(-1., self.up_axis_idx), device=self.device).repeat((self.num_envs, 1))
@@ -991,6 +1016,7 @@ class LeggedRobot(BaseTask):
         self.env_origins[:, 2] = 0.
 
     def _parse_cfg(self, cfg):
+        # 把g1的配置文件转化成参数
         self.dt = self.cfg.control.decimation * self.sim_params.dt
         self.obs_scales = self.cfg.normalization.obs_scales
         self.reward_scales = class_to_dict(self.cfg.rewards.scales)
