@@ -31,28 +31,6 @@
 from legged_gym.envs.base.legged_robot_config import LeggedRobotCfg, LeggedRobotCfgPPO
 import numpy as np
 
-
-# the settings of training, from unviversal_bm project
-
-ARMATURE_5020 = 0.003609725
-ARMATURE_7520_14 = 0.010177520
-ARMATURE_7520_22 = 0.025101925
-ARMATURE_4010 = 0.00425
-
-NATURAL_FREQ = 10 * 2.0 * 3.1415926535  # 10Hz
-DAMPING_RATIO = 2.0
-
-STIFFNESS_5020 = ARMATURE_5020 * NATURAL_FREQ**2
-STIFFNESS_7520_14 = ARMATURE_7520_14 * NATURAL_FREQ**2
-STIFFNESS_7520_22 = ARMATURE_7520_22 * NATURAL_FREQ**2
-STIFFNESS_4010 = ARMATURE_4010 * NATURAL_FREQ**2
-
-DAMPING_5020 = 2.0 * DAMPING_RATIO * ARMATURE_5020 * NATURAL_FREQ
-DAMPING_7520_14 = 2.0 * DAMPING_RATIO * ARMATURE_7520_14 * NATURAL_FREQ
-DAMPING_7520_22 = 2.0 * DAMPING_RATIO * ARMATURE_7520_22 * NATURAL_FREQ
-DAMPING_4010 = 2.0 * DAMPING_RATIO * ARMATURE_4010 * NATURAL_FREQ
-
-
 class G1RoughCfg( LeggedRobotCfg ):
     class init_state( LeggedRobotCfg.init_state ): # 设置29关节的默认角度字典
         pos = [0.0, 0.0, 0.75] # x,y,z [m] # 初始的base位置
@@ -106,73 +84,31 @@ class G1RoughCfg( LeggedRobotCfg ):
     class control( LeggedRobotCfg.control ): # 不同关节的刚度和阻尼
         # PD Drive parameters:
         control_type = 'M'
-
-        # PD Drive parameters: (Homie original settings)
-
-        # stiffness = {'hip_yaw': 100,
-        #              'hip_roll': 100,
-        #              'hip_pitch': 100,
-        #              'knee': 150,
-        #              'ankle': 40,
+        # PD Drive parameters:
+        stiffness = {'hip_yaw': 100,
+                     'hip_roll': 100,
+                     'hip_pitch': 100,
+                     'knee': 150,
+                     'ankle': 40,
                      
-        #              "waist": 300,
-        #              "shoulder": 200,
-        #              "wrist": 20,
-        #              "elbow": 100,
-        #              "hand": 10
+                     "waist": 300,
+                     "shoulder": 200,
+                     "wrist": 20,
+                     "elbow": 100,
+                     "hand": 10
                     
-        #              }  # [N*m/rad]
-        # damping = {  'hip_yaw': 2,
-        #              'hip_roll': 2,
-        #              'hip_pitch': 2,
-        #              'knee': 4,
-        #              'ankle': 2,
-        #              "waist": 5,
-        #              "shoulder": 4,
-        #              "wrist": 0.5,
-        #              "elbow": 1,
-        #              "hand": 2
-        #              }  # [N*m/rad]  # [N*m*s/rad]
-
-        # PD Drive parameters: (tuned settings)
-        stiffness = {
-            "hip_yaw": STIFFNESS_7520_14,
-            "hip_roll": STIFFNESS_7520_22,
-            "hip_pitch": STIFFNESS_7520_14,
-            "knee": STIFFNESS_7520_22,
-            "ankle": 2.0 * STIFFNESS_5020,
-
-            "waist": 2.0 * STIFFNESS_5020,     # roll/pitch
-            "waist_yaw": STIFFNESS_7520_14,    # yaw 单独覆盖
-
-            "shoulder": STIFFNESS_5020,
-            "elbow": STIFFNESS_5020,
-            "wrist_roll": STIFFNESS_5020,
-            "wrist_pitch": STIFFNESS_4010,
-            "wrist_yaw": STIFFNESS_4010,
-
-            "hand": 10,  # g1.py 里没手部原始值，保留你原来的
-        }  # [N*m/rad]
-        damping = {
-            "hip_yaw": DAMPING_7520_14,
-            "hip_roll": DAMPING_7520_22,
-            "hip_pitch": DAMPING_7520_14,
-            "knee": DAMPING_7520_22,
-            "ankle": 2.0 * DAMPING_5020,
-
-            "waist": 2.0 * DAMPING_5020,       # roll/pitch
-            "waist_yaw": DAMPING_7520_14,      # yaw 单独覆盖
-
-            "shoulder": DAMPING_5020,
-            "elbow": DAMPING_5020,
-            "wrist_roll": DAMPING_5020,
-            "wrist_pitch": DAMPING_4010,
-            "wrist_yaw": DAMPING_4010,
-
-            "hand": 2,  # g1.py 里没手部原始值，保留你原来的
-        }
-
-
+                     }  # [N*m/rad]
+        damping = {  'hip_yaw': 2,
+                     'hip_roll': 2,
+                     'hip_pitch': 2,
+                     'knee': 4,
+                     'ankle': 2,
+                     "waist": 5,
+                     "shoulder": 4,
+                     "wrist": 0.5,
+                     "elbow": 1,
+                     "hand": 2
+                     }  # [N*m/rad]  # [N*m*s/rad]
         # action scale: target angle = actionScale * action + defaultAngle
         action_scale = 0.25 #控制尺度
         # decimation: Number of control action updates @ sim DT per policy DT （决策周期）
