@@ -315,6 +315,6 @@ class G1RoughCfgPPO( LeggedRobotCfgPPO ):
         run_name = ''
         experiment_name = ''
         wandb_project = ""
-        logger = "wandb"        
-        # logger = "tensorboard"        
-        wandb_user = "" # enter your own wandb user name here
+        # logger = "wandb"        
+        logger = "tensorboard"        
+        wandb_user = "wangyiyu" # enter your own wandb user name here
