@@ -55,27 +55,27 @@ DAMPING_4010 = 2.0 * DAMPING_RATIO * ARMATURE_4010 * NATURAL_FREQ
 
 class G1RoughCfg( LeggedRobotCfg ):
     class init_state( LeggedRobotCfg.init_state ): # 设置29关节的默认角度字典
-        pos = [0.0, 0.0, 0.75] # x,y,z [m] # 初始的base位置
+        pos = [0.0, 0.0, 0.76] # x,y,z [m] # 初始的base位置
         default_joint_angles = { # = target angles [rad] when action = 0.0
             'left_hip_yaw_joint' : 0. ,   
            'left_hip_roll_joint' : 0,               
-           'left_hip_pitch_joint' : -0.1,         
-           'left_knee_joint' : 0.3,       
-           'left_ankle_pitch_joint' : -0.2,     
+           'left_hip_pitch_joint' : -0.312,         
+           'left_knee_joint' : 0.669,       
+           'left_ankle_pitch_joint' : -0.363,     
            'left_ankle_roll_joint' : 0,     
            'right_hip_yaw_joint' : 0., 
            'right_hip_roll_joint' : 0, 
-           'right_hip_pitch_joint' : -0.1,                                       
-           'right_knee_joint' : 0.3,                                             
-           'right_ankle_pitch_joint': -0.2,                              
+           'right_hip_pitch_joint' : -0.312,                                       
+           'right_knee_joint' : 0.669,                                             
+           'right_ankle_pitch_joint': -0.363,                              
            'right_ankle_roll_joint' : 0,         
             "waist_yaw_joint":0.,
             "waist_roll_joint": 0.,
             "waist_pitch_joint": 0.,
-            "left_shoulder_pitch_joint": 0.,
-            "left_shoulder_roll_joint": 0.,
+            "left_shoulder_pitch_joint": 0.2,
+            "left_shoulder_roll_joint": 0.2,
             "left_shoulder_yaw_joint": 0.,
-            "left_elbow_joint": 0.,
+            "left_elbow_joint": 0.6,
             "left_wrist_roll_joint": 0.,
             "left_wrist_pitch_joint": 0.,
             "left_wrist_yaw_joint": 0.,
@@ -86,10 +86,10 @@ class G1RoughCfg( LeggedRobotCfg ):
             "left_hand_thumb_0_joint": 0.,
             "left_hand_thumb_1_joint": 0.,
             "left_hand_thumb_2_joint": 0.,
-            "right_shoulder_pitch_joint": 0.,
-            "right_shoulder_roll_joint": -0.,#-0.3
+            "right_shoulder_pitch_joint": 0.2,
+            "right_shoulder_roll_joint": -0.2,#-0.3
             "right_shoulder_yaw_joint": 0.,
-            "right_elbow_joint": 0.,#0.8
+            "right_elbow_joint": 0.6,#0.8
             "right_wrist_roll_joint": 0.,
             "right_wrist_pitch_joint": 0.,
             "right_wrist_yaw_joint": 0.,
@@ -138,7 +138,7 @@ class G1RoughCfg( LeggedRobotCfg ):
         stiffness = {
             "hip_yaw": STIFFNESS_7520_14,
             "hip_roll": STIFFNESS_7520_22,
-            "hip_pitch": STIFFNESS_7520_14,
+            "hip_pitch": STIFFNESS_7520_22,
             "knee": STIFFNESS_7520_22,
             "ankle": 2.0 * STIFFNESS_5020,
 
@@ -156,7 +156,7 @@ class G1RoughCfg( LeggedRobotCfg ):
         damping = {
             "hip_yaw": DAMPING_7520_14,
             "hip_roll": DAMPING_7520_22,
-            "hip_pitch": DAMPING_7520_14,
+            "hip_pitch": DAMPING_7520_22,
             "knee": DAMPING_7520_22,
             "ankle": 2.0 * DAMPING_5020,
 
@@ -381,4 +381,4 @@ class G1RoughCfgPPO( LeggedRobotCfgPPO ):
         wandb_project = ""
         # logger = "wandb"        
         logger = "tensorboard"        
-        wandb_user = "wangyiyu" # enter your own wandb user name here
+        wandb_user = "" # enter your own wandb user name here
