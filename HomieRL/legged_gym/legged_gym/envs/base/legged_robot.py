@@ -480,6 +480,16 @@ class LeggedRobot(BaseTask):
             [numpy.array]: Modified DOF properties
         """
         if env_id==0:
+            
+            # use the new armature
+            if hasattr(self.cfg.asset, "armature_map"):
+                for i in range(len(props)):
+                    name = self.dof_names[i]
+                    for key, val in self.cfg.asset.armature_map.items():
+                        if key in name:
+                            props["armature"][i] = val
+                            break
+            
             self.dof_pos_limits = torch.zeros(self.num_dof, 2, dtype=torch.float, device=self.device, requires_grad=False)
             self.hard_dof_pos_limits = torch.zeros(self.num_dof, 2, dtype=torch.float, device=self.device, requires_grad=False)
             self.dof_vel_limits = torch.zeros(self.num_dof, dtype=torch.float, device=self.device, requires_grad=False)
@@ -566,7 +576,8 @@ class LeggedRobot(BaseTask):
             [torch.Tensor]: Torques sent to the simulation
         """
         #pd controller
-        actions_scaled = actions * self.cfg.control.action_scale
+        # actions_scaled = actions * self.cfg.control.action_scale
+        actions_scaled = actions * self.action_scale
         self.joint_pos_target = self.default_dof_pos + actions_scaled
         control_type = self.cfg.control.control_type
         if control_type=="P":
@@ -742,6 +753,19 @@ class LeggedRobot(BaseTask):
         self.projected_gravity = quat_rotate_inverse(self.base_quat, self.gravity_vec)
         self.noise_scale_vec = self._get_noise_scale_vec(self.cfg)
 
+        # Build per-dof action_scale if provided
+        if hasattr(self.cfg.control, "action_scale_map"):
+            self.action_scale = torch.ones(self.num_actions, dtype=torch.float, device=self.device)
+            for i in range(self.num_actions):
+                name = self.dof_names[i]
+                for key, val in self.cfg.control.action_scale_map.items():
+                    if key in name:
+                        self.action_scale[i] = val
+                        break
+        else:
+            self.action_scale = self.cfg.control.action_scale * torch.ones(self.num_actions, dtype=torch.float, device=self.device)
+
+
         # joint positions offsets and PD gains
         self.default_dof_pos = torch.zeros(self.num_dof, dtype=torch.float, device=self.device, requires_grad=False)
         for i in range(self.num_dof):
@@ -761,8 +785,11 @@ class LeggedRobot(BaseTask):
                 if self.cfg.control.control_type in ["P", "V"]:
                     print(f"PD gain of joint {name} were not defined, setting them to zero")
         self.default_dof_pos = self.default_dof_pos.unsqueeze(0)
-        self.action_max = (self.hard_dof_pos_limits[:, 1].unsqueeze(0) - self.default_dof_pos) / self.cfg.control.action_scale
-        self.action_min = (self.hard_dof_pos_limits[:, 0].unsqueeze(0) - self.default_dof_pos) / self.cfg.control.action_scale
+        # self.action_max = (self.hard_dof_pos_limits[:, 1].unsqueeze(0) - self.default_dof_pos) / self.cfg.control.action_scale
+        # self.action_min = (self.hard_dof_pos_limits[:, 0].unsqueeze(0) - self.default_dof_pos) / self.cfg.control.action_scale
+        # use new action scale
+        self.action_max = (self.hard_dof_pos_limits[:, 1].unsqueeze(0) - self.default_dof_pos) / self.action_scale
+        self.action_min = (self.hard_dof_pos_limits[:, 0].unsqueeze(0) - self.default_dof_pos) / self.action_scale
         self.action_curriculum_ratio = self.cfg.domain_rand.init_upper_ratio
         self.target_heights = torch.ones((self.num_envs), device=self.device) * self.cfg.rewards.base_height_target
         print(f"Action min: {self.action_min}")
@@ -800,6 +827,24 @@ class LeggedRobot(BaseTask):
         
         #joint powers
         self.joint_powers = torch.zeros(self.num_envs, 100, self.num_dof, dtype=torch.float, device=self.device, requires_grad=False)
+
+        # ---- debug: print per-dof action_scale + armature ----
+        if hasattr(self, "action_scale"):
+            print("=== action_scale per dof ===")
+            for i, name in enumerate(self.dof_names):
+                print(f"{i:02d} {name}: {self.action_scale[i].item():.6f}")
+
+        if hasattr(self.cfg.asset, "armature_map"):
+            print("=== armature per dof (from cfg.asset.armature_map) ===")
+            for i, name in enumerate(self.dof_names):
+                val = None
+                for key, v in self.cfg.asset.armature_map.items():
+                    if key in name:
+                        val = v
+                        break
+                if val is not None:
+                    print(f"{i:02d} {name}: {val:.6f}")
+
 
     def _prepare_reward_function(self):
         """ Prepares a list of reward functions, whcih will be called to compute the total reward.
@@ -923,11 +968,17 @@ class LeggedRobot(BaseTask):
             self.gym.set_asset_rigid_shape_properties(robot_asset, rigid_shape_props)
             actor_handle = self.gym.create_actor(env_handle, robot_asset, start_pose, self.cfg.asset.name, i, self.cfg.asset.self_collisions, 0)
             dof_props = self._process_dof_props(dof_props_asset, i)
-            dof_props["driveMode"][12:].fill(gymapi.DOF_MODE_POS)
-            dof_props["stiffness"][12:] = [300., 200., 200., 200., 100.,  20.,  20.,  20., 200., 200., 200., 100.,  20.,  20.,  20.]
-            dof_props["damping"][12:] = [5.0000, 4.0000, 4.0000, 4.0000, 1.0000, 0.5000, 0.5000,
-                                            0.5000, 4.0000, 4.0000, 4.0000, 1.0000, 0.5000, 0.5000, 0.5000]
-        
+            # never use default homie settings
+            # dof_props["driveMode"][12:].fill(gymapi.DOF_MODE_POS)
+            # dof_props["stiffness"][12:] = [300., 200., 200., 200., 100.,  20.,  20.,  20., 200., 200., 200., 100.,  20.,  20.,  20.]
+            # dof_props["damping"][12:] = [5.0000, 4.0000, 4.0000, 4.0000, 1.0000, 0.5000, 0.5000,
+            #                                 0.5000, 4.0000, 4.0000, 4.0000, 1.0000, 0.5000, 0.5000, 0.5000]
+            
+            
+            print("=== armature written to dof_props ===")
+            for i, name in enumerate(self.dof_names):
+                print(f"{i:02d} {name}: {dof_props['armature'][i]:.6f}")
+
         
             self.gym.set_actor_dof_properties(env_handle, actor_handle, dof_props)
             body_props = self.gym.get_actor_rigid_body_properties(env_handle, actor_handle)
@@ -1139,8 +1190,10 @@ class LeggedRobot(BaseTask):
     
     def _reward_deviation_knee_joint(self):
         height_error = (self.root_states[:, 2] - self.commands[:, 4])
-        knee_action_min = self.default_dof_pos[:, self.knee_joint_indices] + self.cfg.control.action_scale * self.action_min[:, self.knee_joint_indices]
-        knee_action_max = self.default_dof_pos[:, self.knee_joint_indices] + self.cfg.control.action_scale * self.action_max[:, self.knee_joint_indices]
+        # knee_action_min = self.default_dof_pos[:, self.knee_joint_indices] + self.cfg.control.action_scale * self.action_min[:, self.knee_joint_indices]
+        # knee_action_max = self.default_dof_pos[:, self.knee_joint_indices] + self.cfg.control.action_scale * self.action_max[:, self.knee_joint_indices]
+        knee_action_min = self.default_dof_pos[:, self.knee_joint_indices] + self.action_scale * self.action_min[:, self.knee_joint_indices]
+        knee_action_max = self.default_dof_pos[:, self.knee_joint_indices] + self.action_scale * self.action_max[:, self.knee_joint_indices]
         joint_deviation = (self.dof_pos[:, self.knee_joint_indices] - knee_action_min) / (knee_action_max - knee_action_min) # always positive
         return torch.sum(torch.abs((joint_deviation-0.5) * height_error.unsqueeze(-1)), dim=-1)
     

@@ -53,6 +53,93 @@ DAMPING_7520_22 = 2.0 * DAMPING_RATIO * ARMATURE_7520_22 * NATURAL_FREQ
 DAMPING_4010 = 2.0 * DAMPING_RATIO * ARMATURE_4010 * NATURAL_FREQ
 
 
+# ---- G1_MODE12 joint-level maps (copied from universal_bm g1.py) ----
+
+EFFORT_LIMIT_MAP = {
+    "hip_yaw": 88.0,
+    "hip_roll": 139.0,
+    "hip_pitch": 139.0,  # mode_12
+    "knee": 139.0,
+    "ankle_pitch": 35.0,  # mode_12
+    "ankle_roll": 35.0,
+    "waist_roll": 35.0,
+    "waist_pitch": 35.0,
+    "waist_yaw": 88.0,
+    "shoulder_pitch": 25.0,
+    "shoulder_roll": 25.0,
+    "shoulder_yaw": 25.0,
+    "elbow": 25.0,
+    "wrist_roll": 25.0,
+    "wrist_pitch": 5.0,
+    "wrist_yaw": 5.0,
+}
+
+STIFFNESS_MAP = {
+    "hip_yaw": STIFFNESS_7520_14,
+    "hip_roll": STIFFNESS_7520_22,
+    "hip_pitch": STIFFNESS_7520_22,
+    "knee": STIFFNESS_7520_22,
+    "ankle_pitch": 2.0 * STIFFNESS_5020,
+    "ankle_roll": 2.0 * STIFFNESS_5020,
+    "waist_roll": 2.0 * STIFFNESS_5020,
+    "waist_pitch": 2.0 * STIFFNESS_5020,
+    "waist_yaw": STIFFNESS_7520_14,
+    "shoulder_pitch": STIFFNESS_5020,
+    "shoulder_roll": STIFFNESS_5020,
+    "shoulder_yaw": STIFFNESS_5020,
+    "elbow": STIFFNESS_5020,
+    "wrist_roll": STIFFNESS_5020,
+    "wrist_pitch": STIFFNESS_4010,
+    "wrist_yaw": STIFFNESS_4010,
+}
+
+DAMPING_MAP = {
+    "hip_yaw": DAMPING_7520_14,
+    "hip_roll": DAMPING_7520_22,
+    "hip_pitch": DAMPING_7520_22,
+    "knee": DAMPING_7520_22,
+    "ankle_pitch": 2.0 * DAMPING_5020,
+    "ankle_roll": 2.0 * DAMPING_5020,
+    "waist_roll": 2.0 * DAMPING_5020,
+    "waist_pitch": 2.0 * DAMPING_5020,
+    "waist_yaw": DAMPING_7520_14,
+    "shoulder_pitch": DAMPING_5020,
+    "shoulder_roll": DAMPING_5020,
+    "shoulder_yaw": DAMPING_5020,
+    "elbow": DAMPING_5020,
+    "wrist_roll": DAMPING_5020,
+    "wrist_pitch": DAMPING_4010,
+    "wrist_yaw": DAMPING_4010,
+}
+
+ARMATURE_MAP = {
+    "hip_yaw": ARMATURE_7520_14,
+    "hip_roll": ARMATURE_7520_22,
+    "hip_pitch": ARMATURE_7520_22,
+    "knee": ARMATURE_7520_22,
+    "ankle_pitch": 2.0 * ARMATURE_5020,
+    "ankle_roll": 2.0 * ARMATURE_5020,
+    "waist_roll": 2.0 * ARMATURE_5020,
+    "waist_pitch": 2.0 * ARMATURE_5020,
+    "waist_yaw": ARMATURE_7520_14,
+    "shoulder_pitch": ARMATURE_5020,
+    "shoulder_roll": ARMATURE_5020,
+    "shoulder_yaw": ARMATURE_5020,
+    "elbow": ARMATURE_5020,
+    "wrist_roll": ARMATURE_5020,
+    "wrist_pitch": ARMATURE_4010,
+    "wrist_yaw": ARMATURE_4010,
+}
+
+ACTION_SCALE_MAP = {}
+for k, e in EFFORT_LIMIT_MAP.items():
+    s = STIFFNESS_MAP.get(k, None)
+    if s:
+        ACTION_SCALE_MAP[k] = 0.25 * e / s
+
+# -------------------------------------------------------------------------------- #
+# -------------------------------------------------------------------------------- #
+
 class G1RoughCfg( LeggedRobotCfg ):
     class init_state( LeggedRobotCfg.init_state ): # 设置29关节的默认角度字典
         pos = [0.0, 0.0, 0.76] # x,y,z [m] # 初始的base位置
@@ -107,6 +194,8 @@ class G1RoughCfg( LeggedRobotCfg ):
         # PD Drive parameters:
         control_type = 'M'
 
+        action_scale_map = ACTION_SCALE_MAP # 这里根据g1.py设置对应关节(actuator)的action_scale
+
         # PD Drive parameters: (Homie original settings)
 
         # stiffness = {'hip_yaw': 100,
@@ -136,40 +225,43 @@ class G1RoughCfg( LeggedRobotCfg ):
 
         # PD Drive parameters: (tuned settings)
         stiffness = {
-            "hip_yaw": STIFFNESS_7520_14,
-            "hip_roll": STIFFNESS_7520_22,
-            "hip_pitch": STIFFNESS_7520_22,
-            "knee": STIFFNESS_7520_22,
-            "ankle": 2.0 * STIFFNESS_5020,
+            "hip_yaw": STIFFNESS_MAP["hip_yaw"],
+            "hip_roll": STIFFNESS_MAP["hip_roll"],
+            "hip_pitch": STIFFNESS_MAP["hip_pitch"],
+            "knee": STIFFNESS_MAP["knee"],
+            "ankle": STIFFNESS_MAP["ankle_pitch"],  # ankle_pitch/roll 都用同一值
 
-            "waist": 2.0 * STIFFNESS_5020,     # roll/pitch
-            "waist_yaw": STIFFNESS_7520_14,    # yaw 单独覆盖
+            "waist_roll": STIFFNESS_MAP["waist_roll"],   # roll
+            "waist_pitch": STIFFNESS_MAP["waist_pitch"],
+            "waist_yaw": STIFFNESS_MAP["waist_yaw"],
 
-            "shoulder": STIFFNESS_5020,
-            "elbow": STIFFNESS_5020,
-            "wrist_roll": STIFFNESS_5020,
-            "wrist_pitch": STIFFNESS_4010,
-            "wrist_yaw": STIFFNESS_4010,
+            "shoulder": STIFFNESS_MAP["shoulder_pitch"],
+            "elbow": STIFFNESS_MAP["elbow"],
+            "wrist_roll": STIFFNESS_MAP["wrist_roll"],
+            "wrist_pitch": STIFFNESS_MAP["wrist_pitch"],
+            "wrist_yaw": STIFFNESS_MAP["wrist_yaw"],
 
-            "hand": 10,  # g1.py 里没手部原始值，保留你原来的
-        }  # [N*m/rad]
+            "hand": 10,  # g1.py没有设置hand，保留原来的手部
+        } # [N*m/rad]
+
         damping = {
-            "hip_yaw": DAMPING_7520_14,
-            "hip_roll": DAMPING_7520_22,
-            "hip_pitch": DAMPING_7520_22,
-            "knee": DAMPING_7520_22,
-            "ankle": 2.0 * DAMPING_5020,
+            "hip_yaw": DAMPING_MAP["hip_yaw"],
+            "hip_roll": DAMPING_MAP["hip_roll"],
+            "hip_pitch": DAMPING_MAP["hip_pitch"],
+            "knee": DAMPING_MAP["knee"],
+            "ankle": DAMPING_MAP["ankle_pitch"],
 
-            "waist": 2.0 * DAMPING_5020,       # roll/pitch
-            "waist_yaw": DAMPING_7520_14,      # yaw 单独覆盖
+            "waist_roll": DAMPING_MAP["waist_roll"],
+            "waist_pitch": DAMPING_MAP["waist_pitch"],
+            "waist_yaw": DAMPING_MAP["waist_yaw"],
 
-            "shoulder": DAMPING_5020,
-            "elbow": DAMPING_5020,
-            "wrist_roll": DAMPING_5020,
-            "wrist_pitch": DAMPING_4010,
-            "wrist_yaw": DAMPING_4010,
+            "shoulder": DAMPING_MAP["shoulder_pitch"],
+            "elbow": DAMPING_MAP["elbow"],
+            "wrist_roll": DAMPING_MAP["wrist_roll"],
+            "wrist_pitch": DAMPING_MAP["wrist_pitch"],
+            "wrist_yaw": DAMPING_MAP["wrist_yaw"],
 
-            "hand": 2,  # g1.py 里没手部原始值，保留你原来的
+            "hand": 2, # g1.py没有设置hand，保留原来的手部
         }
 
 
@@ -198,6 +290,8 @@ class G1RoughCfg( LeggedRobotCfg ):
             height = [-0.5, 0.0]
 
     class asset( LeggedRobotCfg.asset ):
+        # armature config from universal_bm's g1.py
+        armature_map = ARMATURE_MAP
         # 记录机器人模型和相关的语义映射
         file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/g1_description/g1.urdf'
         name = "g1"
@@ -319,7 +413,8 @@ class G1RoughCfg( LeggedRobotCfg ):
             stand_still = -0.15    
         only_positive_rewards = False
         tracking_sigma = 0.25
-        soft_dof_pos_limit = 0.975
+        # soft_dof_pos_limit = 0.975
+        soft_dof_pos_limit = 0.9 # setting of g1.py in universal_bm
         soft_dof_vel_limit = 0.80
         soft_torque_limit = 0.95
         base_height_target = 0.74
@@ -334,12 +429,17 @@ class G1RoughCfg( LeggedRobotCfg ):
     class env( LeggedRobotCfg.rewards ):
         # 一次rollout采集4096条轨迹
         num_envs = 4096 # 并行数量
+        
         # policy输出12维的控制信息，对应被控制的12个关节
-        num_actions = 12 # 只控制下肢
-        num_dofs = 27 # 全身DOF， DOF != action
+        # num_actions = 12 # 只控制下肢
+        # num_dofs = 27 # 全身DOF， DOF != action
+        # 对应urdf中的顺序，policy的13-15维就是waist yaw, roll, pitch
+        num_actions = 15 # 只控制下肢, 现在按照29dof加入了waist roll和pitch作为输出action
+        num_dofs = 29 # 原本是27，按照mod_12加上了waist的roll，pitch joint，现在变成29了
+        
         # 观测维度
         # 单步观测: 关节角，关节角速度 + 状态，控制信息 + 上一刻action #？
-        num_one_step_observations = 2 * num_dofs + 10 + num_actions # 54 + 10 + 12 = 22 + 54 = 76
+        num_one_step_observations = 2 * num_dofs + 10 + num_actions # 54(->58) + 10 + 12(->15) = 22 + 54 = 76(->83)
         # critic额外看到的信息
         num_one_step_privileged_obs = num_one_step_observations + 3
         num_actor_history = 6
