@@ -343,7 +343,7 @@ class LeggedRobot(BaseTask):
                                     imu_projected_gravity,
                                     (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,
                                     self.dof_vel * self.obs_scales.dof_vel,
-                                    self.actions[:, :12],
+                                    self.actions[:, :self.num_lower_dof],
                                     ),dim=-1)
         current_actor_obs = torch.clone(current_obs)
         if self.add_noise:
@@ -363,7 +363,7 @@ class LeggedRobot(BaseTask):
                                     imu_projected_gravity,
                                     (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,
                                     self.dof_vel * self.obs_scales.dof_vel,
-                                    self.actions[:, :12],
+                                    self.actions[:, :self.num_lower_dof],
                                     ),dim=-1)
 
         # add noise if needed
@@ -577,7 +577,7 @@ class LeggedRobot(BaseTask):
         """
         #pd controller
         # actions_scaled = actions * self.cfg.control.action_scale
-        actions_scaled = actions * self.action_scale
+        actions_scaled = actions * self.action_scale[: self.num_actions]
         self.joint_pos_target = self.default_dof_pos + actions_scaled
         control_type = self.cfg.control.control_type
         if control_type=="P":
@@ -755,15 +755,16 @@ class LeggedRobot(BaseTask):
 
         # Build per-dof action_scale if provided
         if hasattr(self.cfg.control, "action_scale_map"):
-            self.action_scale = torch.ones(self.num_actions, dtype=torch.float, device=self.device)
-            for i in range(self.num_actions):
-                name = self.dof_names[i]
+            self.action_scale = torch.ones(self.num_dof, dtype=torch.float, device=self.device)
+            for dof_i in range(self.num_dof):
+                name = self.dof_names[dof_i]
                 for key, val in self.cfg.control.action_scale_map.items():
                     if key in name:
-                        self.action_scale[i] = val
+                        self.action_scale[dof_i] = val
                         break
         else:
-            self.action_scale = self.cfg.control.action_scale * torch.ones(self.num_actions, dtype=torch.float, device=self.device)
+            self.action_scale = self.cfg.control.action_scale * torch.ones(self.num_dof, dtype=torch.float, device=self.device)
+
 
 
         # joint positions offsets and PD gains
@@ -831,8 +832,8 @@ class LeggedRobot(BaseTask):
         # ---- debug: print per-dof action_scale + armature ----
         if hasattr(self, "action_scale"):
             print("=== action_scale per dof ===")
-            for i, name in enumerate(self.dof_names):
-                print(f"{i:02d} {name}: {self.action_scale[i].item():.6f}")
+            for dof_i, name in enumerate(self.dof_names):
+                print(f"{dof_i:02d} {name}: {self.action_scale[dof_i].item():.6f}")
 
         if hasattr(self.cfg.asset, "armature_map"):
             print("=== armature per dof (from cfg.asset.armature_map) ===")
@@ -976,8 +977,8 @@ class LeggedRobot(BaseTask):
             
             
             print("=== armature written to dof_props ===")
-            for i, name in enumerate(self.dof_names):
-                print(f"{i:02d} {name}: {dof_props['armature'][i]:.6f}")
+            for dof_i, name in enumerate(self.dof_names):
+                print(f"{dof_i:02d} {name}: {dof_props['armature'][dof_i]:.6f}")
 
         
             self.gym.set_actor_dof_properties(env_handle, actor_handle, dof_props)
@@ -1192,8 +1193,10 @@ class LeggedRobot(BaseTask):
         height_error = (self.root_states[:, 2] - self.commands[:, 4])
         # knee_action_min = self.default_dof_pos[:, self.knee_joint_indices] + self.cfg.control.action_scale * self.action_min[:, self.knee_joint_indices]
         # knee_action_max = self.default_dof_pos[:, self.knee_joint_indices] + self.cfg.control.action_scale * self.action_max[:, self.knee_joint_indices]
-        knee_action_min = self.default_dof_pos[:, self.knee_joint_indices] + self.action_scale * self.action_min[:, self.knee_joint_indices]
-        knee_action_max = self.default_dof_pos[:, self.knee_joint_indices] + self.action_scale * self.action_max[:, self.knee_joint_indices]
+        knee_scale = self.action_scale[self.knee_joint_indices].unsqueeze(0)
+        knee_action_min = self.default_dof_pos[:, self.knee_joint_indices] + knee_scale * self.action_min[:, self.knee_joint_indices]
+        knee_action_max = self.default_dof_pos[:, self.knee_joint_indices] + knee_scale * self.action_max[:, self.knee_joint_indices]
+
         joint_deviation = (self.dof_pos[:, self.knee_joint_indices] - knee_action_min) / (knee_action_max - knee_action_min) # always positive
         return torch.sum(torch.abs((joint_deviation-0.5) * height_error.unsqueeze(-1)), dim=-1)
     

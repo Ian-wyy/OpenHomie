@@ -203,7 +203,7 @@ class PolicyExporterHIM(torch.nn.Module):
         vel, z = parts[..., :3], parts[..., 3:]
         z = F.normalize(z, dim=-1, p=2.0)
         
-        return self.actor(torch.cat((obs_history[:, -76:], vel, z), dim=1))
+        return self.actor(torch.cat((obs_history[:, -83:], vel, z), dim=1))
 
     def export(self, path):
         os.makedirs(path, exist_ok=True)
