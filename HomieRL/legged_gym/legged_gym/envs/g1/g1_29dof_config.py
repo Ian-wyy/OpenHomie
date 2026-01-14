@@ -433,13 +433,13 @@ class G1RoughCfg( LeggedRobotCfg ):
         # policy输出12维的控制信息，对应被控制的12个关节
         # num_actions = 12 # 只控制下肢
         # num_dofs = 27 # 全身DOF， DOF != action
-        # 对应urdf中的顺序，policy的13-15维就是waist yaw, roll, pitch
-        num_actions = 15 # 只控制下肢, 现在按照29dof加入了waist roll和pitch作为输出action
+        # 对应urdf中的顺序，policy的13-15维是waist yaw, roll, pitch
+        num_actions = 12 # 只控制下肢leg(12维), 可以观测到waist roll和pitch但是不作为action
         num_dofs = 29 # 原本是27，按照mod_12加上了waist的roll，pitch joint，现在变成29了
         
         # 观测维度
-        # 单步观测: 关节角，关节角速度 + 状态，控制信息 + 上一刻action #？
-        num_one_step_observations = 2 * num_dofs + 10 + num_actions # 54(->58) + 10 + 12(->15) = 22 + 54 = 76(->83)
+        # 单步观测: 关节角，关节角速度 + 状态，控制信息 + 上一刻action
+        num_one_step_observations = 2 * num_dofs + 10 + num_actions # 54(->58) + 10 + 12 = 22 + 54 = 76(->80)
         # critic额外看到的信息
         num_one_step_privileged_obs = num_one_step_observations + 3
         num_actor_history = 6
