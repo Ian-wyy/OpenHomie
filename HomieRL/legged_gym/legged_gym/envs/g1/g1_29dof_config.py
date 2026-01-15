@@ -476,9 +476,9 @@ class G1RoughCfgPPO( LeggedRobotCfgPPO ):
         save_interval = 200 # 每200次迭代保存一次模型
         num_steps_per_env = 50 # 每个环境rollout 50步更新一次actor/critic网络参数
         max_iterations = 100000
-        run_name = ''
-        experiment_name = ''
-        wandb_project = ""
-        # logger = "wandb"        
-        logger = "tensorboard"        
-        wandb_user = "" # enter your own wandb user name here
+        run_name = "uni_homie_115"
+        experiment_name = "test_policy"
+        wandb_project = "openhomie"
+        logger = "wandb"        
+        # logger = "tensorboard"        
+        wandb_user = "wangyiyu-university-of-michigan" # enter your own wandb user name here
