@@ -479,6 +479,6 @@ class G1RoughCfgPPO( LeggedRobotCfgPPO ):
         run_name = "uni_homie_115"
         experiment_name = "test_policy"
         wandb_project = "openhomie"
-        logger = "wandb"        
-        # logger = "tensorboard"        
+        # logger = "wandb"        
+        logger = "tensorboard"        
         wandb_user = "wangyiyu-university-of-michigan" # enter your own wandb user name here
