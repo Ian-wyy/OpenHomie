@@ -143,51 +143,68 @@ for k, e in EFFORT_LIMIT_MAP.items():
 class G1RoughCfg( LeggedRobotCfg ):
     class init_state( LeggedRobotCfg.init_state ): # 设置29关节的默认角度字典
         pos = [0.0, 0.0, 0.76] # x,y,z [m] # 初始的base位置
-        default_joint_angles = { # = target angles [rad] when action = 0.0
-            'left_hip_yaw_joint' : 0. ,   
-           'left_hip_roll_joint' : 0,               
-           'left_hip_pitch_joint' : -0.312,         
-           'left_knee_joint' : 0.669,       
-           'left_ankle_pitch_joint' : -0.363,     
-           'left_ankle_roll_joint' : 0,     
-           'right_hip_yaw_joint' : 0., 
-           'right_hip_roll_joint' : 0, 
-           'right_hip_pitch_joint' : -0.312,                                       
-           'right_knee_joint' : 0.669,                                             
-           'right_ankle_pitch_joint': -0.363,                              
-           'right_ankle_roll_joint' : 0,         
-            "waist_yaw_joint":0.,
-            "waist_roll_joint": 0.,
-            "waist_pitch_joint": 0.,
-            "left_shoulder_pitch_joint": 0.2,
-            "left_shoulder_roll_joint": 0.2,
-            "left_shoulder_yaw_joint": 0.,
-            "left_elbow_joint": 0.6,
-            "left_wrist_roll_joint": 0.,
-            "left_wrist_pitch_joint": 0.,
-            "left_wrist_yaw_joint": 0.,
-            "left_hand_index_0_joint": 0.,
-            "left_hand_index_1_joint": 0.,
-            "left_hand_middle_0_joint": 0.,
-            "left_hand_middle_1_joint": 0.,
-            "left_hand_thumb_0_joint": 0.,
-            "left_hand_thumb_1_joint": 0.,
-            "left_hand_thumb_2_joint": 0.,
-            "right_shoulder_pitch_joint": 0.2,
-            "right_shoulder_roll_joint": -0.2,#-0.3
-            "right_shoulder_yaw_joint": 0.,
-            "right_elbow_joint": 0.6,#0.8
-            "right_wrist_roll_joint": 0.,
-            "right_wrist_pitch_joint": 0.,
-            "right_wrist_yaw_joint": 0.,
-            "right_hand_index_0_joint": 0.,
-            "right_hand_index_1_joint": 0.,
-            "right_hand_middle_0_joint": 0.,
-            "right_hand_middle_1_joint": 0.,
-            "right_hand_thumb_0_joint": 0.,
-            "right_hand_thumb_1_joint": 0.,
-            "right_hand_thumb_2_joint": 0.,
-           
+        default_joint_angles = {
+            # legs
+            'left_hip_yaw_joint': 0.0,
+            'left_hip_roll_joint': 0.0,
+            'left_hip_pitch_joint': -0.312,
+            'left_knee_joint': 0.669,
+            'left_ankle_pitch_joint': -0.363,
+            'left_ankle_roll_joint': 0.0,
+            'right_hip_yaw_joint': 0.0,
+            'right_hip_roll_joint': 0.0,
+            'right_hip_pitch_joint': -0.312,
+            'right_knee_joint': 0.669,
+            'right_ankle_pitch_joint': -0.363,
+            'right_ankle_roll_joint': 0.0,
+
+            # waist
+            'waist_yaw_joint': 0.0,
+            'waist_roll_joint': 0.0,
+            'waist_pitch_joint': 0.0,
+
+            # arms
+            'left_shoulder_pitch_joint': 0.2,
+            'left_shoulder_roll_joint': 0.2,
+            'left_shoulder_yaw_joint': 0.0,
+            'left_elbow_joint': 0.6,
+            'left_wrist_roll_joint': 0.0,
+            'left_wrist_pitch_joint': 0.0,
+            'left_wrist_yaw_joint': 0.0,
+            'right_shoulder_pitch_joint': 0.2,
+            'right_shoulder_roll_joint': -0.2,
+            'right_shoulder_yaw_joint': 0.0,
+            'right_elbow_joint': 0.6,
+            'right_wrist_roll_joint': 0.0,
+            'right_wrist_pitch_joint': 0.0,
+            'right_wrist_yaw_joint': 0.0,
+
+            # inspire hands (全部 0，与你的 g1_inspire.py 一致)
+            'L_thumb_proximal_yaw_joint': 0.0,
+            'L_thumb_proximal_pitch_joint': 0.0,
+            'L_thumb_intermediate_joint': 0.0,
+            'L_thumb_distal_joint': 0.0,
+            'L_index_proximal_joint': 0.0,
+            'L_index_intermediate_joint': 0.0,
+            'L_middle_proximal_joint': 0.0,
+            'L_middle_intermediate_joint': 0.0,
+            'L_ring_proximal_joint': 0.0,
+            'L_ring_intermediate_joint': 0.0,
+            'L_pinky_proximal_joint': 0.0,
+            'L_pinky_intermediate_joint': 0.0,
+
+            'R_thumb_proximal_yaw_joint': 0.0,
+            'R_thumb_proximal_pitch_joint': 0.0,
+            'R_thumb_intermediate_joint': 0.0,
+            'R_thumb_distal_joint': 0.0,
+            'R_index_proximal_joint': 0.0,
+            'R_index_intermediate_joint': 0.0,
+            'R_middle_proximal_joint': 0.0,
+            'R_middle_intermediate_joint': 0.0,
+            'R_ring_proximal_joint': 0.0,
+            'R_ring_intermediate_joint': 0.0,
+            'R_pinky_proximal_joint': 0.0,
+            'R_pinky_intermediate_joint': 0.0,
         }
 
     class control( LeggedRobotCfg.control ): # 不同关节的刚度和阻尼
@@ -242,6 +259,10 @@ class G1RoughCfg( LeggedRobotCfg ):
             "wrist_yaw": STIFFNESS_MAP["wrist_yaw"],
 
             "hand": 10,  # g1.py没有设置hand，保留原来的手部
+            
+            # inspire 手指：用子串匹配
+            "L_": 500.0,
+            "R_": 500.0,
         } # [N*m/rad]
 
         damping = {
@@ -262,6 +283,10 @@ class G1RoughCfg( LeggedRobotCfg ):
             "wrist_yaw": DAMPING_MAP["wrist_yaw"],
 
             "hand": 2, # g1.py没有设置hand，保留原来的手部
+            
+            # inspire 手指
+            "L_": 30.0,
+            "R_": 30.0,
         }
 
 
@@ -293,7 +318,7 @@ class G1RoughCfg( LeggedRobotCfg ):
         # armature config from universal_bm's g1.py
         armature_map = ARMATURE_MAP
         # 记录机器人模型和相关的语义映射
-        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/g1_description/g1.urdf'
+        file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/g1_inspire_description/g1_inspire_hand.urdf'
         name = "g1"
         foot_name = "ankle_roll"
         left_foot_name = "left_foot"
@@ -435,11 +460,14 @@ class G1RoughCfg( LeggedRobotCfg ):
         # num_dofs = 27 # 全身DOF， DOF != action
         # 对应urdf中的顺序，policy的13-15维是waist yaw, roll, pitch
         num_actions = 12 # 只控制下肢leg(12维), 可以观测到waist roll和pitch但是不作为action
-        num_dofs = 29 # 原本是27，按照mod_12加上了waist的roll，pitch joint，现在变成29了
+        
+        # 原本Homie的dof是27，按照mod_12加上了waist的roll，pitch joint，现在变成29了
+        # 再加上inspire hand，dof变成了53
+        num_dofs = 53 
         
         # 观测维度
         # 单步观测: 关节角，关节角速度 + 状态，控制信息 + 上一刻action
-        num_one_step_observations = 2 * num_dofs + 10 + num_actions # 54(->58) + 10 + 12 = 22 + 54 = 76(->80)
+        num_one_step_observations = 2 * num_dofs + 10 + num_actions # 54(->58->106) + 10 + 12 = 22 + 54 = 76(->80->128)
         # critic额外看到的信息
         num_one_step_privileged_obs = num_one_step_observations + 3
         num_actor_history = 6
