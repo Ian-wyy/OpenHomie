@@ -254,89 +254,152 @@ class HIMPPO:
         flipped_proprioceptive_obs[:, :, 8] = -proprioceptive_obs[:, :, 8] # projected gravity y
         flipped_proprioceptive_obs[:, :, 9] =  proprioceptive_obs[:, :, 9] # projected gravity z
         
-                # ---- joint pos (29 dof) ----
-        flipped_proprioceptive_obs[:, :, 10] =  proprioceptive_obs[:, :, 16] # lower
-        flipped_proprioceptive_obs[:, :, 11] = -proprioceptive_obs[:, :, 17]
-        flipped_proprioceptive_obs[:, :, 12] = -proprioceptive_obs[:, :, 18]
-        flipped_proprioceptive_obs[:, :, 13] =  proprioceptive_obs[:, :, 19]
-        flipped_proprioceptive_obs[:, :, 14] =  proprioceptive_obs[:, :, 20]
-        flipped_proprioceptive_obs[:, :, 15] = -proprioceptive_obs[:, :, 21]
-        flipped_proprioceptive_obs[:, :, 16] =  proprioceptive_obs[:, :, 10]
-        flipped_proprioceptive_obs[:, :, 17] = -proprioceptive_obs[:, :, 11]
-        flipped_proprioceptive_obs[:, :, 18] = -proprioceptive_obs[:, :, 12]
-        flipped_proprioceptive_obs[:, :, 19] =  proprioceptive_obs[:, :, 13]
-        flipped_proprioceptive_obs[:, :, 20] =  proprioceptive_obs[:, :, 14]
-        flipped_proprioceptive_obs[:, :, 21] = -proprioceptive_obs[:, :, 15]
+                # ---- joint pos (53 dof) ----
+        # legs
+        flipped_proprioceptive_obs[:, :, 10 + 0] =  proprioceptive_obs[:, :, 10 + 6]
+        flipped_proprioceptive_obs[:, :, 10 + 1] = -proprioceptive_obs[:, :, 10 + 7]
+        flipped_proprioceptive_obs[:, :, 10 + 2] = -proprioceptive_obs[:, :, 10 + 8]
+        flipped_proprioceptive_obs[:, :, 10 + 3] =  proprioceptive_obs[:, :, 10 + 9]
+        flipped_proprioceptive_obs[:, :, 10 + 4] =  proprioceptive_obs[:, :, 10 + 10]
+        flipped_proprioceptive_obs[:, :, 10 + 5] = -proprioceptive_obs[:, :, 10 + 11]
+
+        flipped_proprioceptive_obs[:, :, 10 + 6]  =  proprioceptive_obs[:, :, 10 + 0]
+        flipped_proprioceptive_obs[:, :, 10 + 7]  = -proprioceptive_obs[:, :, 10 + 1]
+        flipped_proprioceptive_obs[:, :, 10 + 8]  = -proprioceptive_obs[:, :, 10 + 2]
+        flipped_proprioceptive_obs[:, :, 10 + 9]  =  proprioceptive_obs[:, :, 10 + 3]
+        flipped_proprioceptive_obs[:, :, 10 + 10] =  proprioceptive_obs[:, :, 10 + 4]
+        flipped_proprioceptive_obs[:, :, 10 + 11] = -proprioceptive_obs[:, :, 10 + 5]
 
         # waist (yaw/roll flip sign, pitch keep)
-        flipped_proprioceptive_obs[:, :, 22] = -proprioceptive_obs[:, :, 22] # waist_yaw
-        flipped_proprioceptive_obs[:, :, 23] = -proprioceptive_obs[:, :, 23] # waist_roll
-        flipped_proprioceptive_obs[:, :, 24] =  proprioceptive_obs[:, :, 24] # waist_pitch
+        flipped_proprioceptive_obs[:, :, 10 + 12] = -proprioceptive_obs[:, :, 10 + 12]
+        flipped_proprioceptive_obs[:, :, 10 + 13] = -proprioceptive_obs[:, :, 10 + 13]
+        flipped_proprioceptive_obs[:, :, 10 + 14] =  proprioceptive_obs[:, :, 10 + 14]
 
         # arms
-        flipped_proprioceptive_obs[:, :, 25] =  proprioceptive_obs[:, :, 32] # left shoulder
-        flipped_proprioceptive_obs[:, :, 26] = -proprioceptive_obs[:, :, 33]
-        flipped_proprioceptive_obs[:, :, 27] = -proprioceptive_obs[:, :, 34]
-        flipped_proprioceptive_obs[:, :, 28] =  proprioceptive_obs[:, :, 35] # elbow
-        flipped_proprioceptive_obs[:, :, 29] = -proprioceptive_obs[:, :, 36] # wrist
-        flipped_proprioceptive_obs[:, :, 30] =  proprioceptive_obs[:, :, 37]
-        flipped_proprioceptive_obs[:, :, 31] = -proprioceptive_obs[:, :, 38]
+        flipped_proprioceptive_obs[:, :, 10 + 15] =  proprioceptive_obs[:, :, 10 + 34]
+        flipped_proprioceptive_obs[:, :, 10 + 16] = -proprioceptive_obs[:, :, 10 + 35]
+        flipped_proprioceptive_obs[:, :, 10 + 17] = -proprioceptive_obs[:, :, 10 + 36]
+        flipped_proprioceptive_obs[:, :, 10 + 18] =  proprioceptive_obs[:, :, 10 + 37]
+        flipped_proprioceptive_obs[:, :, 10 + 19] = -proprioceptive_obs[:, :, 10 + 38]
+        flipped_proprioceptive_obs[:, :, 10 + 20] =  proprioceptive_obs[:, :, 10 + 39]
+        flipped_proprioceptive_obs[:, :, 10 + 21] = -proprioceptive_obs[:, :, 10 + 40]
 
-        flipped_proprioceptive_obs[:, :, 32] =  proprioceptive_obs[:, :, 25] # right shoulder
-        flipped_proprioceptive_obs[:, :, 33] = -proprioceptive_obs[:, :, 26]
-        flipped_proprioceptive_obs[:, :, 34] = -proprioceptive_obs[:, :, 27]
-        flipped_proprioceptive_obs[:, :, 35] =  proprioceptive_obs[:, :, 28] # elbow
-        flipped_proprioceptive_obs[:, :, 36] = -proprioceptive_obs[:, :, 29] # wrist
-        flipped_proprioceptive_obs[:, :, 37] =  proprioceptive_obs[:, :, 30]
-        flipped_proprioceptive_obs[:, :, 38] = -proprioceptive_obs[:, :, 31]
+        flipped_proprioceptive_obs[:, :, 10 + 34] =  proprioceptive_obs[:, :, 10 + 15]
+        flipped_proprioceptive_obs[:, :, 10 + 35] = -proprioceptive_obs[:, :, 10 + 16]
+        flipped_proprioceptive_obs[:, :, 10 + 36] = -proprioceptive_obs[:, :, 10 + 17]
+        flipped_proprioceptive_obs[:, :, 10 + 37] =  proprioceptive_obs[:, :, 10 + 18]
+        flipped_proprioceptive_obs[:, :, 10 + 38] = -proprioceptive_obs[:, :, 10 + 19]
+        flipped_proprioceptive_obs[:, :, 10 + 39] =  proprioceptive_obs[:, :, 10 + 20]
+        flipped_proprioceptive_obs[:, :, 10 + 40] = -proprioceptive_obs[:, :, 10 + 21]
 
-        # ---- joint vel (offset +29) ----
-        flipped_proprioceptive_obs[:, :, 10 + 29] =  proprioceptive_obs[:, :, 16 + 29]
-        flipped_proprioceptive_obs[:, :, 11 + 29] = -proprioceptive_obs[:, :, 17 + 29]
-        flipped_proprioceptive_obs[:, :, 12 + 29] = -proprioceptive_obs[:, :, 18 + 29]
-        flipped_proprioceptive_obs[:, :, 13 + 29] =  proprioceptive_obs[:, :, 19 + 29]
-        flipped_proprioceptive_obs[:, :, 14 + 29] =  proprioceptive_obs[:, :, 20 + 29]
-        flipped_proprioceptive_obs[:, :, 15 + 29] = -proprioceptive_obs[:, :, 21 + 29]
-        flipped_proprioceptive_obs[:, :, 16 + 29] =  proprioceptive_obs[:, :, 10 + 29]
-        flipped_proprioceptive_obs[:, :, 17 + 29] = -proprioceptive_obs[:, :, 11 + 29]
-        flipped_proprioceptive_obs[:, :, 18 + 29] = -proprioceptive_obs[:, :, 12 + 29]
-        flipped_proprioceptive_obs[:, :, 19 + 29] =  proprioceptive_obs[:, :, 13 + 29]
-        flipped_proprioceptive_obs[:, :, 20 + 29] =  proprioceptive_obs[:, :, 14 + 29]
-        flipped_proprioceptive_obs[:, :, 21 + 29] = -proprioceptive_obs[:, :, 15 + 29]
+        # inspire hands (thumb yaw flips sign; others keep)
+        flipped_proprioceptive_obs[:, :, 10 + 22] = -proprioceptive_obs[:, :, 10 + 41]
+        flipped_proprioceptive_obs[:, :, 10 + 23] =  proprioceptive_obs[:, :, 10 + 42]
+        flipped_proprioceptive_obs[:, :, 10 + 24] =  proprioceptive_obs[:, :, 10 + 43]
+        flipped_proprioceptive_obs[:, :, 10 + 25] =  proprioceptive_obs[:, :, 10 + 44]
+        flipped_proprioceptive_obs[:, :, 10 + 26] =  proprioceptive_obs[:, :, 10 + 45]
+        flipped_proprioceptive_obs[:, :, 10 + 27] =  proprioceptive_obs[:, :, 10 + 46]
+        flipped_proprioceptive_obs[:, :, 10 + 28] =  proprioceptive_obs[:, :, 10 + 47]
+        flipped_proprioceptive_obs[:, :, 10 + 29] =  proprioceptive_obs[:, :, 10 + 48]
+        flipped_proprioceptive_obs[:, :, 10 + 30] =  proprioceptive_obs[:, :, 10 + 49]
+        flipped_proprioceptive_obs[:, :, 10 + 31] =  proprioceptive_obs[:, :, 10 + 50]
+        flipped_proprioceptive_obs[:, :, 10 + 32] =  proprioceptive_obs[:, :, 10 + 51]
+        flipped_proprioceptive_obs[:, :, 10 + 33] =  proprioceptive_obs[:, :, 10 + 52]
 
-        flipped_proprioceptive_obs[:, :, 22 + 29] = -proprioceptive_obs[:, :, 22 + 29] # waist_yaw
-        flipped_proprioceptive_obs[:, :, 23 + 29] = -proprioceptive_obs[:, :, 23 + 29] # waist_roll
-        flipped_proprioceptive_obs[:, :, 24 + 29] =  proprioceptive_obs[:, :, 24 + 29] # waist_pitch
+        flipped_proprioceptive_obs[:, :, 10 + 41] = -proprioceptive_obs[:, :, 10 + 22]
+        flipped_proprioceptive_obs[:, :, 10 + 42] =  proprioceptive_obs[:, :, 10 + 23]
+        flipped_proprioceptive_obs[:, :, 10 + 43] =  proprioceptive_obs[:, :, 10 + 24]
+        flipped_proprioceptive_obs[:, :, 10 + 44] =  proprioceptive_obs[:, :, 10 + 25]
+        flipped_proprioceptive_obs[:, :, 10 + 45] =  proprioceptive_obs[:, :, 10 + 26]
+        flipped_proprioceptive_obs[:, :, 10 + 46] =  proprioceptive_obs[:, :, 10 + 27]
+        flipped_proprioceptive_obs[:, :, 10 + 47] =  proprioceptive_obs[:, :, 10 + 28]
+        flipped_proprioceptive_obs[:, :, 10 + 48] =  proprioceptive_obs[:, :, 10 + 29]
+        flipped_proprioceptive_obs[:, :, 10 + 49] =  proprioceptive_obs[:, :, 10 + 30]
+        flipped_proprioceptive_obs[:, :, 10 + 50] =  proprioceptive_obs[:, :, 10 + 31]
+        flipped_proprioceptive_obs[:, :, 10 + 51] =  proprioceptive_obs[:, :, 10 + 32]
+        flipped_proprioceptive_obs[:, :, 10 + 52] =  proprioceptive_obs[:, :, 10 + 33]
 
-        flipped_proprioceptive_obs[:, :, 25 + 29] =  proprioceptive_obs[:, :, 32 + 29]
-        flipped_proprioceptive_obs[:, :, 26 + 29] = -proprioceptive_obs[:, :, 33 + 29]
-        flipped_proprioceptive_obs[:, :, 27 + 29] = -proprioceptive_obs[:, :, 34 + 29]
-        flipped_proprioceptive_obs[:, :, 28 + 29] =  proprioceptive_obs[:, :, 35 + 29]
-        flipped_proprioceptive_obs[:, :, 29 + 29] = -proprioceptive_obs[:, :, 36 + 29]
-        flipped_proprioceptive_obs[:, :, 30 + 29] =  proprioceptive_obs[:, :, 37 + 29]
-        flipped_proprioceptive_obs[:, :, 31 + 29] = -proprioceptive_obs[:, :, 38 + 29]
 
-        flipped_proprioceptive_obs[:, :, 32 + 29] =  proprioceptive_obs[:, :, 25 + 29]
-        flipped_proprioceptive_obs[:, :, 33 + 29] = -proprioceptive_obs[:, :, 26 + 29]
-        flipped_proprioceptive_obs[:, :, 34 + 29] = -proprioceptive_obs[:, :, 27 + 29]
-        flipped_proprioceptive_obs[:, :, 35 + 29] =  proprioceptive_obs[:, :, 28 + 29]
-        flipped_proprioceptive_obs[:, :, 36 + 29] = -proprioceptive_obs[:, :, 29 + 29]
-        flipped_proprioceptive_obs[:, :, 37 + 29] =  proprioceptive_obs[:, :, 30 + 29]
-        flipped_proprioceptive_obs[:, :, 38 + 29] = -proprioceptive_obs[:, :, 31 + 29]
+        # ---- joint vel (offset +53) ----
+        # legs
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 0] =  proprioceptive_obs[:, :, 10 + 53 + 6]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 1] = -proprioceptive_obs[:, :, 10 + 53 + 7]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 2] = -proprioceptive_obs[:, :, 10 + 53 + 8]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 3] =  proprioceptive_obs[:, :, 10 + 53 + 9]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 4] =  proprioceptive_obs[:, :, 10 + 53 + 10]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 5] = -proprioceptive_obs[:, :, 10 + 53 + 11]
 
-        # ---- joint target (actions, offset +58) ----
-        flipped_proprioceptive_obs[:, :, 10 + 58] =  proprioceptive_obs[:, :, 16 + 58]
-        flipped_proprioceptive_obs[:, :, 11 + 58] = -proprioceptive_obs[:, :, 17 + 58]
-        flipped_proprioceptive_obs[:, :, 12 + 58] = -proprioceptive_obs[:, :, 18 + 58]
-        flipped_proprioceptive_obs[:, :, 13 + 58] =  proprioceptive_obs[:, :, 19 + 58]
-        flipped_proprioceptive_obs[:, :, 14 + 58] =  proprioceptive_obs[:, :, 20 + 58]
-        flipped_proprioceptive_obs[:, :, 15 + 58] = -proprioceptive_obs[:, :, 21 + 58]
-        flipped_proprioceptive_obs[:, :, 16 + 58] =  proprioceptive_obs[:, :, 10 + 58]
-        flipped_proprioceptive_obs[:, :, 17 + 58] = -proprioceptive_obs[:, :, 11 + 58]
-        flipped_proprioceptive_obs[:, :, 18 + 58] = -proprioceptive_obs[:, :, 12 + 58]
-        flipped_proprioceptive_obs[:, :, 19 + 58] =  proprioceptive_obs[:, :, 13 + 58]
-        flipped_proprioceptive_obs[:, :, 20 + 58] =  proprioceptive_obs[:, :, 14 + 58]
-        flipped_proprioceptive_obs[:, :, 21 + 58] = -proprioceptive_obs[:, :, 15 + 58]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 6]  =  proprioceptive_obs[:, :, 10 + 53 + 0]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 7]  = -proprioceptive_obs[:, :, 10 + 53 + 1]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 8]  = -proprioceptive_obs[:, :, 10 + 53 + 2]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 9]  =  proprioceptive_obs[:, :, 10 + 53 + 3]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 10] =  proprioceptive_obs[:, :, 10 + 53 + 4]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 11] = -proprioceptive_obs[:, :, 10 + 53 + 5]
+
+        # waist
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 12] = -proprioceptive_obs[:, :, 10 + 53 + 12]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 13] = -proprioceptive_obs[:, :, 10 + 53 + 13]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 14] =  proprioceptive_obs[:, :, 10 + 53 + 14]
+
+        # arms
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 15] =  proprioceptive_obs[:, :, 10 + 53 + 34]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 16] = -proprioceptive_obs[:, :, 10 + 53 + 35]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 17] = -proprioceptive_obs[:, :, 10 + 53 + 36]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 18] =  proprioceptive_obs[:, :, 10 + 53 + 37]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 19] = -proprioceptive_obs[:, :, 10 + 53 + 38]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 20] =  proprioceptive_obs[:, :, 10 + 53 + 39]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 21] = -proprioceptive_obs[:, :, 10 + 53 + 40]
+
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 34] =  proprioceptive_obs[:, :, 10 + 53 + 15]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 35] = -proprioceptive_obs[:, :, 10 + 53 + 16]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 36] = -proprioceptive_obs[:, :, 10 + 53 + 17]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 37] =  proprioceptive_obs[:, :, 10 + 53 + 18]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 38] = -proprioceptive_obs[:, :, 10 + 53 + 19]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 39] =  proprioceptive_obs[:, :, 10 + 53 + 20]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 40] = -proprioceptive_obs[:, :, 10 + 53 + 21]
+
+        # inspire hands
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 22] = -proprioceptive_obs[:, :, 10 + 53 + 41]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 23] =  proprioceptive_obs[:, :, 10 + 53 + 42]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 24] =  proprioceptive_obs[:, :, 10 + 53 + 43]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 25] =  proprioceptive_obs[:, :, 10 + 53 + 44]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 26] =  proprioceptive_obs[:, :, 10 + 53 + 45]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 27] =  proprioceptive_obs[:, :, 10 + 53 + 46]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 28] =  proprioceptive_obs[:, :, 10 + 53 + 47]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 29] =  proprioceptive_obs[:, :, 10 + 53 + 48]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 30] =  proprioceptive_obs[:, :, 10 + 53 + 49]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 31] =  proprioceptive_obs[:, :, 10 + 53 + 50]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 32] =  proprioceptive_obs[:, :, 10 + 53 + 51]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 33] =  proprioceptive_obs[:, :, 10 + 53 + 52]
+
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 41] = -proprioceptive_obs[:, :, 10 + 53 + 22]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 42] =  proprioceptive_obs[:, :, 10 + 53 + 23]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 43] =  proprioceptive_obs[:, :, 10 + 53 + 24]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 44] =  proprioceptive_obs[:, :, 10 + 53 + 25]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 45] =  proprioceptive_obs[:, :, 10 + 53 + 26]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 46] =  proprioceptive_obs[:, :, 10 + 53 + 27]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 47] =  proprioceptive_obs[:, :, 10 + 53 + 28]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 48] =  proprioceptive_obs[:, :, 10 + 53 + 29]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 49] =  proprioceptive_obs[:, :, 10 + 53 + 30]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 50] =  proprioceptive_obs[:, :, 10 + 53 + 31]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 51] =  proprioceptive_obs[:, :, 10 + 53 + 32]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 52] =  proprioceptive_obs[:, :, 10 + 53 + 33]
+
+
+                # ---- joint target (actions, offset +106) ----
+        flipped_proprioceptive_obs[:, :, 10 + 2 * 53 + 0] =  proprioceptive_obs[:, :, 10 + 2 * 53 + 6]
+        flipped_proprioceptive_obs[:, :, 10 + 2 * 53 + 1] = -proprioceptive_obs[:, :, 10 + 2 * 53 + 7]
+        flipped_proprioceptive_obs[:, :, 10 + 2 * 53 + 2] = -proprioceptive_obs[:, :, 10 + 2 * 53 + 8]
+        flipped_proprioceptive_obs[:, :, 10 + 2 * 53 + 3] =  proprioceptive_obs[:, :, 10 + 2 * 53 + 9]
+        flipped_proprioceptive_obs[:, :, 10 + 2 * 53 + 4] =  proprioceptive_obs[:, :, 10 + 2 * 53 + 10]
+        flipped_proprioceptive_obs[:, :, 10 + 2 * 53 + 5] = -proprioceptive_obs[:, :, 10 + 2 * 53 + 11]
+
+        flipped_proprioceptive_obs[:, :, 10 + 2 * 53 + 6]  =  proprioceptive_obs[:, :, 10 + 2 * 53 + 0]
+        flipped_proprioceptive_obs[:, :, 10 + 2 * 53 + 7]  = -proprioceptive_obs[:, :, 10 + 2 * 53 + 1]
+        flipped_proprioceptive_obs[:, :, 10 + 2 * 53 + 8]  = -proprioceptive_obs[:, :, 10 + 2 * 53 + 2]
+        flipped_proprioceptive_obs[:, :, 10 + 2 * 53 + 9]  =  proprioceptive_obs[:, :, 10 + 2 * 53 + 3]
+        flipped_proprioceptive_obs[:, :, 10 + 2 * 53 + 10] =  proprioceptive_obs[:, :, 10 + 2 * 53 + 4]
+        flipped_proprioceptive_obs[:, :, 10 + 2 * 53 + 11] = -proprioceptive_obs[:, :, 10 + 2 * 53 + 5]
 
 
         return flipped_proprioceptive_obs.view(-1, self.actor_critic.num_one_step_obs * self.actor_critic.actor_history_length).detach()                                                                                                                                                                                                                                             
@@ -358,89 +421,153 @@ class HIMPPO:
         flipped_proprioceptive_obs[:, :, 8] = -proprioceptive_obs[:, :, 8] # projected gravity y
         flipped_proprioceptive_obs[:, :, 9] =  proprioceptive_obs[:, :, 9] # projected gravity z
         
-                # ---- joint pos (29 dof) ----
-        flipped_proprioceptive_obs[:, :, 10] =  proprioceptive_obs[:, :, 16] # lower
-        flipped_proprioceptive_obs[:, :, 11] = -proprioceptive_obs[:, :, 17]
-        flipped_proprioceptive_obs[:, :, 12] = -proprioceptive_obs[:, :, 18]
-        flipped_proprioceptive_obs[:, :, 13] =  proprioceptive_obs[:, :, 19]
-        flipped_proprioceptive_obs[:, :, 14] =  proprioceptive_obs[:, :, 20]
-        flipped_proprioceptive_obs[:, :, 15] = -proprioceptive_obs[:, :, 21]
-        flipped_proprioceptive_obs[:, :, 16] =  proprioceptive_obs[:, :, 10]
-        flipped_proprioceptive_obs[:, :, 17] = -proprioceptive_obs[:, :, 11]
-        flipped_proprioceptive_obs[:, :, 18] = -proprioceptive_obs[:, :, 12]
-        flipped_proprioceptive_obs[:, :, 19] =  proprioceptive_obs[:, :, 13]
-        flipped_proprioceptive_obs[:, :, 20] =  proprioceptive_obs[:, :, 14]
-        flipped_proprioceptive_obs[:, :, 21] = -proprioceptive_obs[:, :, 15]
+        # ---- joint pos (53 dof) ----
+        # legs
+        flipped_proprioceptive_obs[:, :, 10 + 0] =  proprioceptive_obs[:, :, 10 + 6]
+        flipped_proprioceptive_obs[:, :, 10 + 1] = -proprioceptive_obs[:, :, 10 + 7]
+        flipped_proprioceptive_obs[:, :, 10 + 2] = -proprioceptive_obs[:, :, 10 + 8]
+        flipped_proprioceptive_obs[:, :, 10 + 3] =  proprioceptive_obs[:, :, 10 + 9]
+        flipped_proprioceptive_obs[:, :, 10 + 4] =  proprioceptive_obs[:, :, 10 + 10]
+        flipped_proprioceptive_obs[:, :, 10 + 5] = -proprioceptive_obs[:, :, 10 + 11]
+
+        flipped_proprioceptive_obs[:, :, 10 + 6]  =  proprioceptive_obs[:, :, 10 + 0]
+        flipped_proprioceptive_obs[:, :, 10 + 7]  = -proprioceptive_obs[:, :, 10 + 1]
+        flipped_proprioceptive_obs[:, :, 10 + 8]  = -proprioceptive_obs[:, :, 10 + 2]
+        flipped_proprioceptive_obs[:, :, 10 + 9]  =  proprioceptive_obs[:, :, 10 + 3]
+        flipped_proprioceptive_obs[:, :, 10 + 10] =  proprioceptive_obs[:, :, 10 + 4]
+        flipped_proprioceptive_obs[:, :, 10 + 11] = -proprioceptive_obs[:, :, 10 + 5]
 
         # waist (yaw/roll flip sign, pitch keep)
-        flipped_proprioceptive_obs[:, :, 22] = -proprioceptive_obs[:, :, 22] # waist_yaw
-        flipped_proprioceptive_obs[:, :, 23] = -proprioceptive_obs[:, :, 23] # waist_roll
-        flipped_proprioceptive_obs[:, :, 24] =  proprioceptive_obs[:, :, 24] # waist_pitch
+        flipped_proprioceptive_obs[:, :, 10 + 12] = -proprioceptive_obs[:, :, 10 + 12]
+        flipped_proprioceptive_obs[:, :, 10 + 13] = -proprioceptive_obs[:, :, 10 + 13]
+        flipped_proprioceptive_obs[:, :, 10 + 14] =  proprioceptive_obs[:, :, 10 + 14]
 
         # arms
-        flipped_proprioceptive_obs[:, :, 25] =  proprioceptive_obs[:, :, 32] # left shoulder
-        flipped_proprioceptive_obs[:, :, 26] = -proprioceptive_obs[:, :, 33]
-        flipped_proprioceptive_obs[:, :, 27] = -proprioceptive_obs[:, :, 34]
-        flipped_proprioceptive_obs[:, :, 28] =  proprioceptive_obs[:, :, 35] # elbow
-        flipped_proprioceptive_obs[:, :, 29] = -proprioceptive_obs[:, :, 36] # wrist
-        flipped_proprioceptive_obs[:, :, 30] =  proprioceptive_obs[:, :, 37]
-        flipped_proprioceptive_obs[:, :, 31] = -proprioceptive_obs[:, :, 38]
+        flipped_proprioceptive_obs[:, :, 10 + 15] =  proprioceptive_obs[:, :, 10 + 34]
+        flipped_proprioceptive_obs[:, :, 10 + 16] = -proprioceptive_obs[:, :, 10 + 35]
+        flipped_proprioceptive_obs[:, :, 10 + 17] = -proprioceptive_obs[:, :, 10 + 36]
+        flipped_proprioceptive_obs[:, :, 10 + 18] =  proprioceptive_obs[:, :, 10 + 37]
+        flipped_proprioceptive_obs[:, :, 10 + 19] = -proprioceptive_obs[:, :, 10 + 38]
+        flipped_proprioceptive_obs[:, :, 10 + 20] =  proprioceptive_obs[:, :, 10 + 39]
+        flipped_proprioceptive_obs[:, :, 10 + 21] = -proprioceptive_obs[:, :, 10 + 40]
 
-        flipped_proprioceptive_obs[:, :, 32] =  proprioceptive_obs[:, :, 25] # right shoulder
-        flipped_proprioceptive_obs[:, :, 33] = -proprioceptive_obs[:, :, 26]
-        flipped_proprioceptive_obs[:, :, 34] = -proprioceptive_obs[:, :, 27]
-        flipped_proprioceptive_obs[:, :, 35] =  proprioceptive_obs[:, :, 28] # elbow
-        flipped_proprioceptive_obs[:, :, 36] = -proprioceptive_obs[:, :, 29] # wrist
-        flipped_proprioceptive_obs[:, :, 37] =  proprioceptive_obs[:, :, 30]
-        flipped_proprioceptive_obs[:, :, 38] = -proprioceptive_obs[:, :, 31]
+        flipped_proprioceptive_obs[:, :, 10 + 34] =  proprioceptive_obs[:, :, 10 + 15]
+        flipped_proprioceptive_obs[:, :, 10 + 35] = -proprioceptive_obs[:, :, 10 + 16]
+        flipped_proprioceptive_obs[:, :, 10 + 36] = -proprioceptive_obs[:, :, 10 + 17]
+        flipped_proprioceptive_obs[:, :, 10 + 37] =  proprioceptive_obs[:, :, 10 + 18]
+        flipped_proprioceptive_obs[:, :, 10 + 38] = -proprioceptive_obs[:, :, 10 + 19]
+        flipped_proprioceptive_obs[:, :, 10 + 39] =  proprioceptive_obs[:, :, 10 + 20]
+        flipped_proprioceptive_obs[:, :, 10 + 40] = -proprioceptive_obs[:, :, 10 + 21]
 
-        # ---- joint vel (offset +29) ----
-        flipped_proprioceptive_obs[:, :, 10 + 29] =  proprioceptive_obs[:, :, 16 + 29]
-        flipped_proprioceptive_obs[:, :, 11 + 29] = -proprioceptive_obs[:, :, 17 + 29]
-        flipped_proprioceptive_obs[:, :, 12 + 29] = -proprioceptive_obs[:, :, 18 + 29]
-        flipped_proprioceptive_obs[:, :, 13 + 29] =  proprioceptive_obs[:, :, 19 + 29]
-        flipped_proprioceptive_obs[:, :, 14 + 29] =  proprioceptive_obs[:, :, 20 + 29]
-        flipped_proprioceptive_obs[:, :, 15 + 29] = -proprioceptive_obs[:, :, 21 + 29]
-        flipped_proprioceptive_obs[:, :, 16 + 29] =  proprioceptive_obs[:, :, 10 + 29]
-        flipped_proprioceptive_obs[:, :, 17 + 29] = -proprioceptive_obs[:, :, 11 + 29]
-        flipped_proprioceptive_obs[:, :, 18 + 29] = -proprioceptive_obs[:, :, 12 + 29]
-        flipped_proprioceptive_obs[:, :, 19 + 29] =  proprioceptive_obs[:, :, 13 + 29]
-        flipped_proprioceptive_obs[:, :, 20 + 29] =  proprioceptive_obs[:, :, 14 + 29]
-        flipped_proprioceptive_obs[:, :, 21 + 29] = -proprioceptive_obs[:, :, 15 + 29]
+        # inspire hands (thumb yaw flips sign; others keep)
+        flipped_proprioceptive_obs[:, :, 10 + 22] = -proprioceptive_obs[:, :, 10 + 41]
+        flipped_proprioceptive_obs[:, :, 10 + 23] =  proprioceptive_obs[:, :, 10 + 42]
+        flipped_proprioceptive_obs[:, :, 10 + 24] =  proprioceptive_obs[:, :, 10 + 43]
+        flipped_proprioceptive_obs[:, :, 10 + 25] =  proprioceptive_obs[:, :, 10 + 44]
+        flipped_proprioceptive_obs[:, :, 10 + 26] =  proprioceptive_obs[:, :, 10 + 45]
+        flipped_proprioceptive_obs[:, :, 10 + 27] =  proprioceptive_obs[:, :, 10 + 46]
+        flipped_proprioceptive_obs[:, :, 10 + 28] =  proprioceptive_obs[:, :, 10 + 47]
+        flipped_proprioceptive_obs[:, :, 10 + 29] =  proprioceptive_obs[:, :, 10 + 48]
+        flipped_proprioceptive_obs[:, :, 10 + 30] =  proprioceptive_obs[:, :, 10 + 49]
+        flipped_proprioceptive_obs[:, :, 10 + 31] =  proprioceptive_obs[:, :, 10 + 50]
+        flipped_proprioceptive_obs[:, :, 10 + 32] =  proprioceptive_obs[:, :, 10 + 51]
+        flipped_proprioceptive_obs[:, :, 10 + 33] =  proprioceptive_obs[:, :, 10 + 52]
 
-        flipped_proprioceptive_obs[:, :, 22 + 29] = -proprioceptive_obs[:, :, 22 + 29] # waist_yaw
-        flipped_proprioceptive_obs[:, :, 23 + 29] = -proprioceptive_obs[:, :, 23 + 29] # waist_roll
-        flipped_proprioceptive_obs[:, :, 24 + 29] =  proprioceptive_obs[:, :, 24 + 29] # waist_pitch
+        flipped_proprioceptive_obs[:, :, 10 + 41] = -proprioceptive_obs[:, :, 10 + 22]
+        flipped_proprioceptive_obs[:, :, 10 + 42] =  proprioceptive_obs[:, :, 10 + 23]
+        flipped_proprioceptive_obs[:, :, 10 + 43] =  proprioceptive_obs[:, :, 10 + 24]
+        flipped_proprioceptive_obs[:, :, 10 + 44] =  proprioceptive_obs[:, :, 10 + 25]
+        flipped_proprioceptive_obs[:, :, 10 + 45] =  proprioceptive_obs[:, :, 10 + 26]
+        flipped_proprioceptive_obs[:, :, 10 + 46] =  proprioceptive_obs[:, :, 10 + 27]
+        flipped_proprioceptive_obs[:, :, 10 + 47] =  proprioceptive_obs[:, :, 10 + 28]
+        flipped_proprioceptive_obs[:, :, 10 + 48] =  proprioceptive_obs[:, :, 10 + 29]
+        flipped_proprioceptive_obs[:, :, 10 + 49] =  proprioceptive_obs[:, :, 10 + 30]
+        flipped_proprioceptive_obs[:, :, 10 + 50] =  proprioceptive_obs[:, :, 10 + 31]
+        flipped_proprioceptive_obs[:, :, 10 + 51] =  proprioceptive_obs[:, :, 10 + 32]
+        flipped_proprioceptive_obs[:, :, 10 + 52] =  proprioceptive_obs[:, :, 10 + 33]
 
-        flipped_proprioceptive_obs[:, :, 25 + 29] =  proprioceptive_obs[:, :, 32 + 29]
-        flipped_proprioceptive_obs[:, :, 26 + 29] = -proprioceptive_obs[:, :, 33 + 29]
-        flipped_proprioceptive_obs[:, :, 27 + 29] = -proprioceptive_obs[:, :, 34 + 29]
-        flipped_proprioceptive_obs[:, :, 28 + 29] =  proprioceptive_obs[:, :, 35 + 29]
-        flipped_proprioceptive_obs[:, :, 29 + 29] = -proprioceptive_obs[:, :, 36 + 29]
-        flipped_proprioceptive_obs[:, :, 30 + 29] =  proprioceptive_obs[:, :, 37 + 29]
-        flipped_proprioceptive_obs[:, :, 31 + 29] = -proprioceptive_obs[:, :, 38 + 29]
 
-        flipped_proprioceptive_obs[:, :, 32 + 29] =  proprioceptive_obs[:, :, 25 + 29]
-        flipped_proprioceptive_obs[:, :, 33 + 29] = -proprioceptive_obs[:, :, 26 + 29]
-        flipped_proprioceptive_obs[:, :, 34 + 29] = -proprioceptive_obs[:, :, 27 + 29]
-        flipped_proprioceptive_obs[:, :, 35 + 29] =  proprioceptive_obs[:, :, 28 + 29]
-        flipped_proprioceptive_obs[:, :, 36 + 29] = -proprioceptive_obs[:, :, 29 + 29]
-        flipped_proprioceptive_obs[:, :, 37 + 29] =  proprioceptive_obs[:, :, 30 + 29]
-        flipped_proprioceptive_obs[:, :, 38 + 29] = -proprioceptive_obs[:, :, 31 + 29]
+        # ---- joint vel (offset +53) ----
+        # legs
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 0] =  proprioceptive_obs[:, :, 10 + 53 + 6]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 1] = -proprioceptive_obs[:, :, 10 + 53 + 7]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 2] = -proprioceptive_obs[:, :, 10 + 53 + 8]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 3] =  proprioceptive_obs[:, :, 10 + 53 + 9]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 4] =  proprioceptive_obs[:, :, 10 + 53 + 10]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 5] = -proprioceptive_obs[:, :, 10 + 53 + 11]
 
-        # ---- joint target (actions, offset +58) ----
-        flipped_proprioceptive_obs[:, :, 10 + 58] =  proprioceptive_obs[:, :, 16 + 58]
-        flipped_proprioceptive_obs[:, :, 11 + 58] = -proprioceptive_obs[:, :, 17 + 58]
-        flipped_proprioceptive_obs[:, :, 12 + 58] = -proprioceptive_obs[:, :, 18 + 58]
-        flipped_proprioceptive_obs[:, :, 13 + 58] =  proprioceptive_obs[:, :, 19 + 58]
-        flipped_proprioceptive_obs[:, :, 14 + 58] =  proprioceptive_obs[:, :, 20 + 58]
-        flipped_proprioceptive_obs[:, :, 15 + 58] = -proprioceptive_obs[:, :, 21 + 58]
-        flipped_proprioceptive_obs[:, :, 16 + 58] =  proprioceptive_obs[:, :, 10 + 58]
-        flipped_proprioceptive_obs[:, :, 17 + 58] = -proprioceptive_obs[:, :, 11 + 58]
-        flipped_proprioceptive_obs[:, :, 18 + 58] = -proprioceptive_obs[:, :, 12 + 58]
-        flipped_proprioceptive_obs[:, :, 19 + 58] =  proprioceptive_obs[:, :, 13 + 58]
-        flipped_proprioceptive_obs[:, :, 20 + 58] =  proprioceptive_obs[:, :, 14 + 58]
-        flipped_proprioceptive_obs[:, :, 21 + 58] = -proprioceptive_obs[:, :, 15 + 58]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 6]  =  proprioceptive_obs[:, :, 10 + 53 + 0]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 7]  = -proprioceptive_obs[:, :, 10 + 53 + 1]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 8]  = -proprioceptive_obs[:, :, 10 + 53 + 2]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 9]  =  proprioceptive_obs[:, :, 10 + 53 + 3]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 10] =  proprioceptive_obs[:, :, 10 + 53 + 4]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 11] = -proprioceptive_obs[:, :, 10 + 53 + 5]
+
+        # waist
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 12] = -proprioceptive_obs[:, :, 10 + 53 + 12]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 13] = -proprioceptive_obs[:, :, 10 + 53 + 13]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 14] =  proprioceptive_obs[:, :, 10 + 53 + 14]
+
+        # arms
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 15] =  proprioceptive_obs[:, :, 10 + 53 + 34]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 16] = -proprioceptive_obs[:, :, 10 + 53 + 35]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 17] = -proprioceptive_obs[:, :, 10 + 53 + 36]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 18] =  proprioceptive_obs[:, :, 10 + 53 + 37]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 19] = -proprioceptive_obs[:, :, 10 + 53 + 38]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 20] =  proprioceptive_obs[:, :, 10 + 53 + 39]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 21] = -proprioceptive_obs[:, :, 10 + 53 + 40]
+
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 34] =  proprioceptive_obs[:, :, 10 + 53 + 15]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 35] = -proprioceptive_obs[:, :, 10 + 53 + 16]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 36] = -proprioceptive_obs[:, :, 10 + 53 + 17]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 37] =  proprioceptive_obs[:, :, 10 + 53 + 18]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 38] = -proprioceptive_obs[:, :, 10 + 53 + 19]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 39] =  proprioceptive_obs[:, :, 10 + 53 + 20]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 40] = -proprioceptive_obs[:, :, 10 + 53 + 21]
+
+        # inspire hands
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 22] = -proprioceptive_obs[:, :, 10 + 53 + 41]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 23] =  proprioceptive_obs[:, :, 10 + 53 + 42]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 24] =  proprioceptive_obs[:, :, 10 + 53 + 43]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 25] =  proprioceptive_obs[:, :, 10 + 53 + 44]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 26] =  proprioceptive_obs[:, :, 10 + 53 + 45]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 27] =  proprioceptive_obs[:, :, 10 + 53 + 46]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 28] =  proprioceptive_obs[:, :, 10 + 53 + 47]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 29] =  proprioceptive_obs[:, :, 10 + 53 + 48]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 30] =  proprioceptive_obs[:, :, 10 + 53 + 49]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 31] =  proprioceptive_obs[:, :, 10 + 53 + 50]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 32] =  proprioceptive_obs[:, :, 10 + 53 + 51]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 33] =  proprioceptive_obs[:, :, 10 + 53 + 52]
+
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 41] = -proprioceptive_obs[:, :, 10 + 53 + 22]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 42] =  proprioceptive_obs[:, :, 10 + 53 + 23]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 43] =  proprioceptive_obs[:, :, 10 + 53 + 24]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 44] =  proprioceptive_obs[:, :, 10 + 53 + 25]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 45] =  proprioceptive_obs[:, :, 10 + 53 + 26]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 46] =  proprioceptive_obs[:, :, 10 + 53 + 27]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 47] =  proprioceptive_obs[:, :, 10 + 53 + 28]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 48] =  proprioceptive_obs[:, :, 10 + 53 + 29]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 49] =  proprioceptive_obs[:, :, 10 + 53 + 30]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 50] =  proprioceptive_obs[:, :, 10 + 53 + 31]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 51] =  proprioceptive_obs[:, :, 10 + 53 + 32]
+        flipped_proprioceptive_obs[:, :, 10 + 53 + 52] =  proprioceptive_obs[:, :, 10 + 53 + 33]
+
+
+        # ---- joint target (actions, offset +106) ----
+        flipped_proprioceptive_obs[:, :, 10 + 2 * 53 + 0] =  proprioceptive_obs[:, :, 10 + 2 * 53 + 6]
+        flipped_proprioceptive_obs[:, :, 10 + 2 * 53 + 1] = -proprioceptive_obs[:, :, 10 + 2 * 53 + 7]
+        flipped_proprioceptive_obs[:, :, 10 + 2 * 53 + 2] = -proprioceptive_obs[:, :, 10 + 2 * 53 + 8]
+        flipped_proprioceptive_obs[:, :, 10 + 2 * 53 + 3] =  proprioceptive_obs[:, :, 10 + 2 * 53 + 9]
+        flipped_proprioceptive_obs[:, :, 10 + 2 * 53 + 4] =  proprioceptive_obs[:, :, 10 + 2 * 53 + 10]
+        flipped_proprioceptive_obs[:, :, 10 + 2 * 53 + 5] = -proprioceptive_obs[:, :, 10 + 2 * 53 + 11]
+
+        flipped_proprioceptive_obs[:, :, 10 + 2 * 53 + 6]  =  proprioceptive_obs[:, :, 10 + 2 * 53 + 0]
+        flipped_proprioceptive_obs[:, :, 10 + 2 * 53 + 7]  = -proprioceptive_obs[:, :, 10 + 2 * 53 + 1]
+        flipped_proprioceptive_obs[:, :, 10 + 2 * 53 + 8]  = -proprioceptive_obs[:, :, 10 + 2 * 53 + 2]
+        flipped_proprioceptive_obs[:, :, 10 + 2 * 53 + 9]  =  proprioceptive_obs[:, :, 10 + 2 * 53 + 3]
+        flipped_proprioceptive_obs[:, :, 10 + 2 * 53 + 10] =  proprioceptive_obs[:, :, 10 + 2 * 53 + 4]
+        flipped_proprioceptive_obs[:, :, 10 + 2 * 53 + 11] = -proprioceptive_obs[:, :, 10 + 2 * 53 + 5]
+
 
         return flipped_proprioceptive_obs.view(-1, self.actor_critic.num_one_step_critic_obs * self.actor_critic.critic_history_length).detach()
     

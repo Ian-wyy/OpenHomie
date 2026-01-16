@@ -23,7 +23,7 @@ def export_jit_to_onnx(jit_model, path, dummy_input):
 
 pt_path = ""
 jit_model = torch.jit.load(pt_path) # path to your .pt file
-dummy_input = torch.randn(1, 80*6, device='cpu')  # shape of the input of the model
+dummy_input = torch.randn(1, 128*6, device='cpu') # 128 per frame, 6 frames
 export_path = ""
 
 export_jit_to_onnx(jit_model, export_path, dummy_input)

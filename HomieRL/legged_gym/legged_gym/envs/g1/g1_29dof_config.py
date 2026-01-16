@@ -137,6 +137,10 @@ for k, e in EFFORT_LIMIT_MAP.items():
     if s:
         ACTION_SCALE_MAP[k] = 0.25 * e / s
 
+# inspire hands: match g1_inspire.py (0.25 * 2 / 500 = 0.001)
+ACTION_SCALE_MAP["L_"] = 0.001
+ACTION_SCALE_MAP["R_"] = 0.001
+
 # -------------------------------------------------------------------------------- #
 # -------------------------------------------------------------------------------- #
 
@@ -397,7 +401,7 @@ class G1RoughCfg( LeggedRobotCfg ):
         upper_interval_s = 1
         max_push_vel_xy = 0.5
         
-        init_upper_ratio = 0.
+        init_upper_ratio = 0.2 # 可以调，0.0表示完全不随机
         delay = use_random
 
     class rewards( LeggedRobotCfg.rewards ):
