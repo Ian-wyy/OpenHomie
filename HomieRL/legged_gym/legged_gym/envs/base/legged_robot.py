@@ -337,17 +337,24 @@ class LeggedRobot(BaseTask):
         """
         imu_ang_vel = quat_rotate_inverse(self.rigid_body_states[:, self.imu_index,3:7], self.rigid_body_states[:, self.imu_index,10:13])
         imu_projected_gravity = quat_rotate_inverse(self.rigid_body_states[:, self.imu_index,3:7], self.gravity_vec)
+        
+        obs_dof_pos = self.dof_pos[:, self.obs_dof_indices]
+        obs_dof_vel = self.dof_vel[:, self.obs_dof_indices]
+        obs_default = self.default_dof_pos[:, self.obs_dof_indices]
+        
         current_obs = torch.cat((   self.commands[:, :3] * self.commands_scale,
                                     self.commands[:, 4].unsqueeze(1),
                                     imu_ang_vel  * self.obs_scales.ang_vel,
                                     imu_projected_gravity,
-                                    (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,
-                                    self.dof_vel * self.obs_scales.dof_vel,
+                                    # 现在dof=53，但是观测的obs还是用29
+                                    (obs_dof_pos - obs_default) * self.obs_scales.dof_pos,
+                                    obs_dof_vel * self.obs_scales.dof_vel,
                                     self.actions[:, :self.num_lower_dof],
                                     ),dim=-1)
         current_actor_obs = torch.clone(current_obs)
         if self.add_noise:
-            current_actor_obs += (2 * torch.rand_like(current_actor_obs) - 1) * self.noise_scale_vec[0:(10 + 2 * self.num_actions + self.num_lower_dof)]           
+            # 这里也要用obs替换原来等于总dof的action dof
+            current_actor_obs += (2 * torch.rand_like(current_actor_obs) - 1) * self.noise_scale_vec[0:(10 + 2 * self.num_obs_dof + self.num_lower_dof)]   
         self.obs_buf = torch.cat((self.obs_buf[:, self.num_one_step_obs:self.actor_proprioceptive_obs_length], current_actor_obs[:, :self.num_one_step_obs]), dim=-1)
         current_critic_obs = torch.cat((current_obs, self.base_lin_vel * self.obs_scales.lin_vel), dim=-1)
         self.privileged_obs_buf = torch.cat((self.privileged_obs_buf[:, self.num_one_step_privileged_obs:self.critic_proprioceptive_obs_length], current_critic_obs), dim=-1)
@@ -357,18 +364,26 @@ class LeggedRobot(BaseTask):
         """
         imu_ang_vel = quat_rotate_inverse(self.rigid_body_states[:, self.imu_index,3:7], self.rigid_body_states[:, self.imu_index,10:13])
         imu_projected_gravity = quat_rotate_inverse(self.rigid_body_states[:, self.imu_index,3:7], self.gravity_vec)
-        current_obs = torch.cat((   self.commands[:, :3] * self.commands_scale,
-                                    self.commands[:, 4].unsqueeze(1),
-                                    imu_ang_vel  * self.obs_scales.ang_vel,
-                                    imu_projected_gravity,
-                                    (self.dof_pos - self.default_dof_pos) * self.obs_scales.dof_pos,
-                                    self.dof_vel * self.obs_scales.dof_vel,
-                                    self.actions[:, :self.num_lower_dof],
-                                    ),dim=-1)
+        
+        obs_dof_pos = self.dof_pos[:, self.obs_dof_indices]
+        obs_dof_vel = self.dof_vel[:, self.obs_dof_indices]
+        obs_default = self.default_dof_pos[:, self.obs_dof_indices]
+
+        current_obs = torch.cat((
+            self.commands[:, :3] * self.commands_scale,
+            self.commands[:, 4].unsqueeze(1),
+            imu_ang_vel * self.obs_scales.ang_vel,
+            imu_projected_gravity,
+            (obs_dof_pos - obs_default) * self.obs_scales.dof_pos,
+            obs_dof_vel * self.obs_scales.dof_vel,
+            self.actions[:, :self.num_lower_dof],
+        ), dim=-1)
+
 
         # add noise if needed
         if self.add_noise:
-            current_obs += (2 * torch.rand_like(current_obs) - 1) * self.noise_scale_vec[0:(10 + 2 * self.num_actions + self.num_lower_dof)]
+            # 这里也要用obs替换原来等于总dof的action dof
+            current_obs += (2 * torch.rand_like(current_obs) - 1) * self.noise_scale_vec[0:(10 + 2 * self.num_obs_dof + self.num_lower_dof)]
         current_critic_obs = torch.cat((current_obs, self.base_lin_vel * self.obs_scales.lin_vel), dim=-1)
         return torch.cat((self.privileged_obs_buf[:, self.num_one_step_privileged_obs:self.critic_proprioceptive_obs_length], current_critic_obs), dim=-1)[env_ids]
             
@@ -685,16 +700,17 @@ class LeggedRobot(BaseTask):
         Returns:
             [torch.Tensor]: Vector of scales used to multiply a uniform distribution in [-1, 1]
         """
-        noise_vec = torch.zeros(10 + 2*self.num_actions + self.num_lower_dof, device=self.device)
+        noise_vec = torch.zeros(10 + 2*self.num_obs_dof + self.num_lower_dof, device=self.device)
         self.add_noise = self.cfg.noise.add_noise
         noise_scales = self.cfg.noise.noise_scales
         noise_level = self.cfg.noise.noise_level
         noise_vec[0:4] = 0. # commands
         noise_vec[4:7] = noise_scales.ang_vel * noise_level * self.obs_scales.ang_vel
         noise_vec[7:10] = noise_scales.gravity * noise_level
-        noise_vec[10:(10 + self.num_actions)] = noise_scales.dof_pos * noise_level * self.obs_scales.dof_pos
-        noise_vec[(10 + self.num_actions):(10 + 2 * self.num_actions)] = noise_scales.dof_vel * noise_level * self.obs_scales.dof_vel
-        noise_vec[(10 + 2 * self.num_actions):(10 + 2 * self.num_actions + self.num_lower_dof)] = 0. # previous actions
+        # 这里加了inpire hands，但是不把他作为obs，因此观测action不等于dof了
+        noise_vec[10:(10 + self.num_obs_dof)] = noise_scales.dof_pos * noise_level * self.obs_scales.dof_pos
+        noise_vec[(10 + self.num_obs_dof):(10 + 2 * self.num_obs_dof)] = noise_scales.dof_vel * noise_level * self.obs_scales.dof_vel
+        noise_vec[(10 + 2 * self.num_obs_dof):(10 + 2 * self.num_obs_dof + self.num_lower_dof)] = 0. # previous actions
         return noise_vec
 
     #----------------------------------------
@@ -765,13 +781,25 @@ class LeggedRobot(BaseTask):
         else:
             self.action_scale = self.cfg.control.action_scale * torch.ones(self.num_dof, dtype=torch.float, device=self.device)
 
+        # build obs dof indices (optional)
+        if hasattr(self.cfg.asset, "obs_joint_names"):
+            name_to_id = {n: i for i, n in enumerate(self.dof_names)}
+            self.obs_dof_indices = torch.tensor(
+                [name_to_id[n] for n in self.cfg.asset.obs_joint_names],
+                dtype=torch.long,
+                device=self.device,
+            )
+        else:
+            self.obs_dof_indices = torch.arange(self.num_dof, device=self.device)
+
+        self.num_obs_dof = int(self.obs_dof_indices.numel())
 
 
         # joint positions offsets and PD gains
         self.default_dof_pos = torch.zeros(self.num_dof, dtype=torch.float, device=self.device, requires_grad=False)
         for i in range(self.num_dof):
             name = self.dof_names[i]
-            print(f"Joint {self.gym.find_actor_dof_index(self.envs[0], self.actor_handles[0], name, gymapi.IndexDomain.DOMAIN_ACTOR)}: {name}")
+            # print(f"Joint {self.gym.find_actor_dof_index(self.envs[0], self.actor_handles[0], name, gymapi.IndexDomain.DOMAIN_ACTOR)}: {name}")
             angle = self.cfg.init_state.default_joint_angles[name]
             self.default_dof_pos[i] = angle
             found = False
@@ -793,8 +821,8 @@ class LeggedRobot(BaseTask):
         self.action_min = (self.hard_dof_pos_limits[:, 0].unsqueeze(0) - self.default_dof_pos) / self.action_scale
         self.action_curriculum_ratio = self.cfg.domain_rand.init_upper_ratio
         self.target_heights = torch.ones((self.num_envs), device=self.device) * self.cfg.rewards.base_height_target
-        print(f"Action min: {self.action_min}")
-        print(f"Action max: {self.action_max}")
+        # print(f"Action min: {self.action_min}")
+        # print(f"Action max: {self.action_max}")
         
         self.random_upper_actions = torch.zeros((self.num_envs, self.num_actions - self.num_lower_dof), device=self.device)
         self.current_upper_actions = torch.zeros((self.num_envs, self.num_actions - self.num_lower_dof), device=self.device)
@@ -845,6 +873,10 @@ class LeggedRobot(BaseTask):
                         break
                 if val is not None:
                     print(f"{i:02d} {name}: {val:.6f}")
+                    
+        print(f"[INFO] num_dof={self.num_dof} num_obs_dof={self.num_obs_dof} num_actions={self.num_actions}")
+        print(f"[INFO] action_min/max (first 6): {self.action_min[0, :6].cpu().tolist()} / {self.action_max[0, :6].cpu().tolist()}")
+
 
 
     def _prepare_reward_function(self):

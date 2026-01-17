@@ -345,6 +345,40 @@ class G1RoughCfg( LeggedRobotCfg ):
         self_collision = 1
         flip_visual_attachments = False
         ankle_sole_distance = 0.02
+        
+        # 原有的obs dimension，不把inspire hand加入obs
+        obs_joint_names = [
+            "left_hip_pitch_joint",
+            "left_hip_roll_joint",
+            "left_hip_yaw_joint",
+            "left_knee_joint",
+            "left_ankle_pitch_joint",
+            "left_ankle_roll_joint",
+            "right_hip_pitch_joint",
+            "right_hip_roll_joint",
+            "right_hip_yaw_joint",
+            "right_knee_joint",
+            "right_ankle_pitch_joint",
+            "right_ankle_roll_joint",
+            "waist_yaw_joint",
+            "waist_roll_joint",
+            "waist_pitch_joint",
+            "left_shoulder_pitch_joint",
+            "left_shoulder_roll_joint",
+            "left_shoulder_yaw_joint",
+            "left_elbow_joint",
+            "left_wrist_roll_joint",
+            "left_wrist_pitch_joint",
+            "left_wrist_yaw_joint",
+            "right_shoulder_pitch_joint",
+            "right_shoulder_roll_joint",
+            "right_shoulder_yaw_joint",
+            "right_elbow_joint",
+            "right_wrist_roll_joint",
+            "right_wrist_pitch_joint",
+            "right_wrist_yaw_joint",
+        ]
+
 
         
     class domain_rand(LeggedRobotCfg.domain_rand):
@@ -461,17 +495,19 @@ class G1RoughCfg( LeggedRobotCfg ):
         
         # policy输出12维的控制信息，对应被控制的12个关节
         # num_actions = 12 # 只控制下肢
-        # num_dofs = 27 # 全身DOF， DOF != action
+        # num_dofs = 29 # 全身DOF， DOF != action
         # 对应urdf中的顺序，policy的13-15维是waist yaw, roll, pitch
         num_actions = 12 # 只控制下肢leg(12维), 可以观测到waist roll和pitch但是不作为action
         
         # 原本Homie的dof是27，按照mod_12加上了waist的roll，pitch joint，现在变成29了
         # 再加上inspire hand，dof变成了53
+        # 注意: dof是53，但是obs还是用原来的29
         num_dofs = 53 
+        num_obs_dofs = 29
         
         # 观测维度
         # 单步观测: 关节角，关节角速度 + 状态，控制信息 + 上一刻action
-        num_one_step_observations = 2 * num_dofs + 10 + num_actions # 54(->58->106) + 10 + 12 = 22 + 54 = 76(->80->128)
+        num_one_step_observations = 2 * num_obs_dofs + 10 + num_actions # 54(->58-) + 10 + 12 = 22 + 54 = 76(->80)
         # critic额外看到的信息
         num_one_step_privileged_obs = num_one_step_observations + 3
         num_actor_history = 6
