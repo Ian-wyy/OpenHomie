@@ -401,7 +401,7 @@ class G1RoughCfg( LeggedRobotCfg ):
         upper_interval_s = 1
         max_push_vel_xy = 0.5
         
-        init_upper_ratio = 0.2 # 可以调，0.0表示完全不随机
+        init_upper_ratio = 0.0 # 可以调，0.0表示完全不随机
         delay = use_random
 
     class rewards( LeggedRobotCfg.rewards ):
