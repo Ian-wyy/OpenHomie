@@ -325,8 +325,8 @@ class G1RoughCfg( LeggedRobotCfg ):
         file = '{LEGGED_GYM_ROOT_DIR}/resources/robots/g1_inspire_description/g1_inspire_hand.urdf'
         name = "g1"
         foot_name = "ankle_roll"
-        left_foot_name = "left_foot"
-        right_foot_name = "right_foot"
+        left_foot_name = "left_ankle"   # new indices from g1_inspire_hand.urdf
+        right_foot_name = "right_ankle" # new indices from g1_inspire_hand.urdf
         penalize_contacts_on = ["hip", "knee"] # 这些部位碰到地面有惩罚
         terminate_after_contacts_on = ['torso'] # torso碰到地面程序终止
         curriculum_joints = []
