@@ -743,6 +743,19 @@ class LeggedRobot(BaseTask):
 
         self.contact_forces = gymtorch.wrap_tensor(net_contact_forces).view(self.num_envs, -1, 3) # shape: num_envs, num_bodies, xyz axis
 
+        # build obs dof indices (optional), which will be used to init noise scale vec and observation computation
+        if hasattr(self.cfg.asset, "obs_joint_names"):
+            name_to_id = {n: i for i, n in enumerate(self.dof_names)}
+            self.obs_dof_indices = torch.tensor(
+                [name_to_id[n] for n in self.cfg.asset.obs_joint_names],
+                dtype=torch.long,
+                device=self.device,
+            )
+        else:
+            self.obs_dof_indices = torch.arange(self.num_dof, device=self.device)
+
+        self.num_obs_dof = int(self.obs_dof_indices.numel())
+
         # initialize some data used later on
         # 动作buffer/观测buffer/...
         self.common_step_counter = 0
@@ -780,19 +793,6 @@ class LeggedRobot(BaseTask):
                         break
         else:
             self.action_scale = self.cfg.control.action_scale * torch.ones(self.num_dof, dtype=torch.float, device=self.device)
-
-        # build obs dof indices (optional)
-        if hasattr(self.cfg.asset, "obs_joint_names"):
-            name_to_id = {n: i for i, n in enumerate(self.dof_names)}
-            self.obs_dof_indices = torch.tensor(
-                [name_to_id[n] for n in self.cfg.asset.obs_joint_names],
-                dtype=torch.long,
-                device=self.device,
-            )
-        else:
-            self.obs_dof_indices = torch.arange(self.num_dof, device=self.device)
-
-        self.num_obs_dof = int(self.obs_dof_indices.numel())
 
 
         # joint positions offsets and PD gains
