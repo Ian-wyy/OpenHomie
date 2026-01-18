@@ -342,7 +342,7 @@ class G1RoughCfg( LeggedRobotCfg ):
         imu_link = "imu_in_pelvis"
         knee_names = ["left_knee_link", "left_hip_yaw_link", "right_knee_link", "right_hip_yaw_link"]
         # 是否启用自碰撞
-        self_collision = 0
+        self_collision = 1
         flip_visual_attachments = False
         ankle_sole_distance = 0.02
         
