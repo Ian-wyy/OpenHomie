@@ -138,8 +138,8 @@ for k, e in EFFORT_LIMIT_MAP.items():
         ACTION_SCALE_MAP[k] = 0.25 * e / s
 
 # inspire hands: match g1_inspire.py (0.25 * 2 / 500 = 0.001)
-ACTION_SCALE_MAP["L_"] = 0.001
-ACTION_SCALE_MAP["R_"] = 0.001
+ACTION_SCALE_MAP["L_"] = 0
+ACTION_SCALE_MAP["R_"] = 0
 
 # -------------------------------------------------------------------------------- #
 # -------------------------------------------------------------------------------- #
