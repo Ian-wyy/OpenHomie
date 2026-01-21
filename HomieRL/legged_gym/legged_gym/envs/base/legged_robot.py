@@ -528,8 +528,8 @@ class LeggedRobot(BaseTask):
             sum = 0
             for i, p in enumerate(props):
                 sum += p.mass
-                print(f"Mass of body {i}: {p.mass} (before randomization)")
-            print(f"Total mass {sum} (before randomization)")
+                # print(f"Mass of body {i}: {p.mass} (before randomization)")
+            # print(f"Total mass {sum} (before randomization)")
         # randomize base mass
         if self.cfg.domain_rand.randomize_payload_mass:
             props[self.torso_body_index].mass = self.default_rigid_body_mass[self.torso_body_index] + self.payload[env_id, 0]
@@ -545,6 +545,9 @@ class LeggedRobot(BaseTask):
         if self.cfg.domain_rand.randomize_link_mass:
             rng = self.cfg.domain_rand.link_mass_range
             for i in range(1, len(props)):
+                name = self.body_names[i]
+                if name.startswith(("L_", "R_")): # remove the link mass randomization of hands
+                    continue
                 scale = np.random.uniform(rng[0], rng[1])
                 props[i].mass = scale * self.default_rigid_body_mass[i]
 
@@ -811,8 +814,8 @@ class LeggedRobot(BaseTask):
             if not found:
                 self.p_gains[i] = 0.
                 self.d_gains[i] = 0.
-                if self.cfg.control.control_type in ["P", "V"]:
-                    print(f"PD gain of joint {name} were not defined, setting them to zero")
+                # if self.cfg.control.control_type in ["P", "V"]:
+                #     print(f"PD gain of joint {name} were not defined, setting them to zero")
         self.default_dof_pos = self.default_dof_pos.unsqueeze(0)
         # self.action_max = (self.hard_dof_pos_limits[:, 1].unsqueeze(0) - self.default_dof_pos) / self.cfg.control.action_scale
         # self.action_min = (self.hard_dof_pos_limits[:, 0].unsqueeze(0) - self.default_dof_pos) / self.cfg.control.action_scale
@@ -858,24 +861,24 @@ class LeggedRobot(BaseTask):
         self.joint_powers = torch.zeros(self.num_envs, 100, self.num_dof, dtype=torch.float, device=self.device, requires_grad=False)
 
         # ---- debug: print per-dof action_scale + armature ----
-        if hasattr(self, "action_scale"):
-            print("=== action_scale per dof ===")
-            for dof_i, name in enumerate(self.dof_names):
-                print(f"{dof_i:02d} {name}: {self.action_scale[dof_i].item():.6f}")
+        # if hasattr(self, "action_scale"):
+        #     print("=== action_scale per dof ===")
+        #     for dof_i, name in enumerate(self.dof_names):
+        #         print(f"{dof_i:02d} {name}: {self.action_scale[dof_i].item():.6f}")
 
-        if hasattr(self.cfg.asset, "armature_map"):
-            print("=== armature per dof (from cfg.asset.armature_map) ===")
-            for i, name in enumerate(self.dof_names):
-                val = None
-                for key, v in self.cfg.asset.armature_map.items():
-                    if key in name:
-                        val = v
-                        break
-                if val is not None:
-                    print(f"{i:02d} {name}: {val:.6f}")
+        # if hasattr(self.cfg.asset, "armature_map"):
+        #     print("=== armature per dof (from cfg.asset.armature_map) ===")
+        #     for i, name in enumerate(self.dof_names):
+        #         val = None
+        #         for key, v in self.cfg.asset.armature_map.items():
+        #             if key in name:
+        #                 val = v
+        #                 break
+        #         if val is not None:
+        #             print(f"{i:02d} {name}: {val:.6f}")
                     
-        print(f"[INFO] num_dof={self.num_dof} num_obs_dof={self.num_obs_dof} num_actions={self.num_actions}")
-        print(f"[INFO] action_min/max (first 6): {self.action_min[0, :6].cpu().tolist()} / {self.action_max[0, :6].cpu().tolist()}")
+        # print(f"[INFO] num_dof={self.num_dof} num_obs_dof={self.num_obs_dof} num_actions={self.num_actions}")
+        # print(f"[INFO] action_min/max (first 6): {self.action_min[0, :6].cpu().tolist()} / {self.action_max[0, :6].cpu().tolist()}")
 
 
 
@@ -1009,9 +1012,9 @@ class LeggedRobot(BaseTask):
             #                                 0.5000, 4.0000, 4.0000, 4.0000, 1.0000, 0.5000, 0.5000, 0.5000]
             
             
-            print("=== armature written to dof_props ===")
-            for dof_i, name in enumerate(self.dof_names):
-                print(f"{dof_i:02d} {name}: {dof_props['armature'][dof_i]:.6f}")
+            # print("=== armature written to dof_props ===")
+            # for dof_i, name in enumerate(self.dof_names):
+            #     print(f"{dof_i:02d} {name}: {dof_props['armature'][dof_i]:.6f}")
 
         
             self.gym.set_actor_dof_properties(env_handle, actor_handle, dof_props)

@@ -138,8 +138,8 @@ for k, e in EFFORT_LIMIT_MAP.items():
         ACTION_SCALE_MAP[k] = 0.25 * e / s
 
 # inspire hands: match g1_inspire.py (0.25 * 2 / 500 = 0.001)
-ACTION_SCALE_MAP["L_"] = 0
-ACTION_SCALE_MAP["R_"] = 0
+ACTION_SCALE_MAP["L_"] = 0.001
+ACTION_SCALE_MAP["R_"] = 0.001
 
 # -------------------------------------------------------------------------------- #
 # -------------------------------------------------------------------------------- #
@@ -397,7 +397,8 @@ class G1RoughCfg( LeggedRobotCfg ):
         randomize_payload_mass = use_random
         payload_mass_range = [-5, 10]
         
-        hand_payload_mass_range = [-0.1, 0.3]
+        # hand payload mass range off
+        hand_payload_mass_range = [0.0, 0.0]
 
         # 质心，外形的偏移
         randomize_com_displacement = False
