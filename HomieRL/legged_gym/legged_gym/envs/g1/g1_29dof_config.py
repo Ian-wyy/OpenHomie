@@ -383,39 +383,39 @@ class G1RoughCfg( LeggedRobotCfg ):
         
     class domain_rand(LeggedRobotCfg.domain_rand):
         
-        use_random = False
+        use_random = True
         
         # 在关节力、力矩里面加random扰动
-        randomize_joint_injection = use_random
+        randomize_joint_injection = False # use_random
         joint_injection_range = [-0.05, 0.05]
         
         # 执行器偏执
-        randomize_actuation_offset = use_random
+        randomize_actuation_offset = False # use_random
         actuation_offset_range = [-0.05, 0.05]
 
         # 身体，手部的负载质量扰动
-        randomize_payload_mass = use_random
+        randomize_payload_mass = use_random 
         payload_mass_range = [-5, 10]
         
         # hand payload mass range off
         hand_payload_mass_range = [0.0, 0.0]
 
         # 质心，外形的偏移
-        randomize_com_displacement = False
+        randomize_com_displacement = False # use_random
         com_displacement_range = [-0.1, 0.1]
         
-        randomize_body_displacement = use_random
+        randomize_body_displacement = False # use_random
         body_displacement_range = [-0.1, 0.1]
 
         # 各个连杆质量缩放
-        randomize_link_mass = use_random
+        randomize_link_mass = False # use_random
         link_mass_range = [0.8, 1.2]
         
         # 摩擦力随机
-        randomize_friction = use_random
+        randomize_friction = False # use_random
         friction_range = [0.1, 3.0]
         
-        randomize_restitution = use_random
+        randomize_restitution = False # use_random
         restitution_range = [0.0, 1.0]
         
         # 控制增益随机
