@@ -88,6 +88,11 @@ class LeggedRobot(BaseTask):
             device_id (int): 0, 1, ...
             headless (bool): Run without rendering if True
         """
+        
+        # add a marker, each env just init once
+        self.randomize_once = True
+        self._rand_done = False
+
         self.cfg = cfg
         self.sim_params = sim_params
         self.height_samples = None
@@ -262,7 +267,14 @@ class LeggedRobot(BaseTask):
         if self.cfg.env.action_curriculum and (self.common_step_counter % self.max_episode_length==0):
             self.update_action_curriculum(env_ids)
             
-        self.refresh_actor_rigid_shape_props(env_ids)
+        # Homie原本需要每次reset都随机化各个参数
+        # self.refresh_actor_rigid_shape_props(env_ids)
+        
+        # 现在每个env只在创建的时候随机化一次
+        if self.randomize_once and not self._rand_done:
+            self.refresh_actor_rigid_shape_props(env_ids)
+        elif not self.randomize_once:
+            self.refresh_actor_rigid_shape_props(env_ids)
         
         # reset robot states
         self._reset_dofs(env_ids)
@@ -286,13 +298,38 @@ class LeggedRobot(BaseTask):
         self.yaw[env_ids] = reset_yaw
         self.reset_buf[env_ids] = 1
         
-         #reset randomized prop
-        if self.cfg.domain_rand.randomize_kp:
-            self.Kp_factors[env_ids] = torch_rand_float(self.cfg.domain_rand.kp_range[0], self.cfg.domain_rand.kp_range[1], (len(env_ids), self.num_actions), device=self.device)
-        if self.cfg.domain_rand.randomize_kd:
-            self.Kd_factors[env_ids] = torch_rand_float(self.cfg.domain_rand.kd_range[0], self.cfg.domain_rand.kd_range[1], (len(env_ids), self.num_actions), device=self.device)
-        if self.cfg.domain_rand.randomize_actuation_offset:
-            self.actuation_offset[env_ids] = torch_rand_float(self.cfg.domain_rand.actuation_offset_range[0], self.cfg.domain_rand.actuation_offset_range[1], (len(env_ids), self.num_dof), device=self.device) * self.torque_limits.unsqueeze(0)
+        #reset randomized prop
+        # if self.cfg.domain_rand.randomize_kp:
+        #     self.Kp_factors[env_ids] = torch_rand_float(self.cfg.domain_rand.kp_range[0], self.cfg.domain_rand.kp_range[1], (len(env_ids), self.num_actions), device=self.device)
+        # if self.cfg.domain_rand.randomize_kd:
+        #     self.Kd_factors[env_ids] = torch_rand_float(self.cfg.domain_rand.kd_range[0], self.cfg.domain_rand.kd_range[1], (len(env_ids), self.num_actions), device=self.device)
+        # if self.cfg.domain_rand.randomize_actuation_offset:
+        #     self.actuation_offset[env_ids] = torch_rand_float(self.cfg.domain_rand.actuation_offset_range[0], self.cfg.domain_rand.actuation_offset_range[1], (len(env_ids), self.num_dof), device=self.device) * self.torque_limits.unsqueeze(0)
+  
+        # 现在每个env只在创建的时候随机化一次
+        if (not self.randomize_once) or (self.randomize_once and not self._rand_done):
+            if self.cfg.domain_rand.randomize_kp:
+                self.Kp_factors[env_ids] = torch_rand_float(
+                    self.cfg.domain_rand.kp_range[0],
+                    self.cfg.domain_rand.kp_range[1],
+                    (len(env_ids), self.num_actions),
+                    device=self.device,
+                )
+            if self.cfg.domain_rand.randomize_kd:
+                self.Kd_factors[env_ids] = torch_rand_float(
+                    self.cfg.domain_rand.kd_range[0],
+                    self.cfg.domain_rand.kd_range[1],
+                    (len(env_ids), self.num_actions),
+                    device=self.device,
+                )
+            if self.cfg.domain_rand.randomize_actuation_offset:
+                self.actuation_offset[env_ids] = torch_rand_float(
+                    self.cfg.domain_rand.actuation_offset_range[0],
+                    self.cfg.domain_rand.actuation_offset_range[1],
+                    (len(env_ids), self.num_dof),
+                    device=self.device,
+                ) * self.torque_limits.unsqueeze(0)
+
         
         # fill extras
         self.extras["episode"] = {}
@@ -309,6 +346,10 @@ class LeggedRobot(BaseTask):
             self.extras["time_outs"] = self.time_out_buf
 
         self.episode_length_buf[env_ids] = 0
+        
+        if self.randomize_once and not self._rand_done:
+            self._rand_done = True
+
     
     def compute_reward(self):
         """ Compute rewards
