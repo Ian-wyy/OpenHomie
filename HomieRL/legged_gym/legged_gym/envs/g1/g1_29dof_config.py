@@ -383,7 +383,7 @@ class G1RoughCfg( LeggedRobotCfg ):
         
     class domain_rand(LeggedRobotCfg.domain_rand):
         
-        use_random = True
+        use_random = False
         
         # 在关节力、力矩里面加random扰动
         randomize_joint_injection = use_random
