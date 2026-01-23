@@ -853,12 +853,6 @@ class LeggedRobot(BaseTask):
             print("=== action_scale for first 12 dofs ===")
             for i in range(12):
                 print(f"{i:02d}: {self.dof_names[i]} scale={self.action_scale[i].item():.6f}")
-        # TEMP DEBUG: print action range for first 12 dofs
-        if not hasattr(self, "_printed_action_range"):
-            self._printed_action_range = True
-            print("=== action_min/max (first 12) ===")
-            for i in range(12):
-                print(f"{i:02d}: {self.dof_names[i]} min={self.action_min[0, i].item():.3f} max={self.action_max[0, i].item():.3f}")
 
         # joint positions offsets and PD gains
         self.default_dof_pos = torch.zeros(self.num_dof, dtype=torch.float, device=self.device, requires_grad=False)
@@ -886,8 +880,13 @@ class LeggedRobot(BaseTask):
         self.action_min = (self.hard_dof_pos_limits[:, 0].unsqueeze(0) - self.default_dof_pos) / self.action_scale
         self.action_curriculum_ratio = self.cfg.domain_rand.init_upper_ratio
         self.target_heights = torch.ones((self.num_envs), device=self.device) * self.cfg.rewards.base_height_target
-        # print(f"Action min: {self.action_min}")
-        # print(f"Action max: {self.action_max}")
+        
+        # TEMP DEBUG: print action range for first 12 dofs
+        if not hasattr(self, "_printed_action_range"):
+            self._printed_action_range = True
+            print("=== action_min/max (first 12) ===")
+            for i in range(12):
+                print(f"{i:02d}: {self.dof_names[i]} min={self.action_min[0, i].item():.3f} max={self.action_max[0, i].item():.3f}")
         
         self.random_upper_actions = torch.zeros((self.num_envs, self.num_actions - self.num_lower_dof), device=self.device)
         self.current_upper_actions = torch.zeros((self.num_envs, self.num_actions - self.num_lower_dof), device=self.device)
