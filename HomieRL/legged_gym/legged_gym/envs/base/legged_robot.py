@@ -1356,7 +1356,7 @@ class LeggedRobot(BaseTask):
         left_foot_pos = self.rigid_body_states[:, self.left_foot_indices[0:3], :3].clone()
         right_foot_pos = self.rigid_body_states[:, self.right_foot_indices[0:3], :3].clone()
         feet_distances = torch.norm(left_foot_pos - right_foot_pos, dim=2)
-        feet_distances_var = torch.var(feet_distances, dim=1)
+        feet_distances_var = torch.var(feet_distances, dim=1, unbiased=False)
         return feet_distances_var * (self.commands[:, 4] >= 0.735)
     
     def _reward_smoothness(self):
