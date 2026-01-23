@@ -769,18 +769,6 @@ class LeggedRobot(BaseTask):
             print("=== DOF order (first 20) ===")
             for i, name in enumerate(self.dof_names[:20]):
                 print(f"{i:02d}: {name}")
-        # TEMP DEBUG: print action_scale for first 12 dofs
-        if not hasattr(self, "_printed_action_scale"):
-            self._printed_action_scale = True
-            print("=== action_scale for first 12 dofs ===")
-            for i in range(12):
-                print(f"{i:02d}: {self.dof_names[i]} scale={self.action_scale[i].item():.6f}")
-        # TEMP DEBUG: print action range for first 12 dofs
-        if not hasattr(self, "_printed_action_range"):
-            self._printed_action_range = True
-            print("=== action_min/max (first 12) ===")
-            for i in range(12):
-                print(f"{i:02d}: {self.dof_names[i]} min={self.action_min[0, i].item():.3f} max={self.action_max[0, i].item():.3f}")
 
         
         # get gym GPU state tensors
@@ -859,6 +847,18 @@ class LeggedRobot(BaseTask):
         else:
             self.action_scale = self.cfg.control.action_scale * torch.ones(self.num_dof, dtype=torch.float, device=self.device)
 
+        # TEMP DEBUG: print action_scale for first 12 dofs
+        if not hasattr(self, "_printed_action_scale"):
+            self._printed_action_scale = True
+            print("=== action_scale for first 12 dofs ===")
+            for i in range(12):
+                print(f"{i:02d}: {self.dof_names[i]} scale={self.action_scale[i].item():.6f}")
+        # TEMP DEBUG: print action range for first 12 dofs
+        if not hasattr(self, "_printed_action_range"):
+            self._printed_action_range = True
+            print("=== action_min/max (first 12) ===")
+            for i in range(12):
+                print(f"{i:02d}: {self.dof_names[i]} min={self.action_min[0, i].item():.3f} max={self.action_max[0, i].item():.3f}")
 
         # joint positions offsets and PD gains
         self.default_dof_pos = torch.zeros(self.num_dof, dtype=torch.float, device=self.device, requires_grad=False)
