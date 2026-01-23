@@ -762,6 +762,27 @@ class LeggedRobot(BaseTask):
         # buffer是用来暂存环境状态，动作，奖励等中间结果的张量
         """ Initialize torch tensors which will contain simulation states and processed quantities
         """
+        
+        # TEMP DEBUG: print first 20 dof names once
+        if not hasattr(self, "_printed_dof_order"):
+            self._printed_dof_order = True
+            print("=== DOF order (first 20) ===")
+            for i, name in enumerate(self.dof_names[:20]):
+                print(f"{i:02d}: {name}")
+        # TEMP DEBUG: print action_scale for first 12 dofs
+        if not hasattr(self, "_printed_action_scale"):
+            self._printed_action_scale = True
+            print("=== action_scale for first 12 dofs ===")
+            for i in range(12):
+                print(f"{i:02d}: {self.dof_names[i]} scale={self.action_scale[i].item():.6f}")
+        # TEMP DEBUG: print action range for first 12 dofs
+        if not hasattr(self, "_printed_action_range"):
+            self._printed_action_range = True
+            print("=== action_min/max (first 12) ===")
+            for i in range(12):
+                print(f"{i:02d}: {self.dof_names[i]} min={self.action_min[0, i].item():.3f} max={self.action_max[0, i].item():.3f}")
+
+        
         # get gym GPU state tensors
         actor_root_state = self.gym.acquire_actor_root_state_tensor(self.sim)
         dof_state_tensor = self.gym.acquire_dof_state_tensor(self.sim)
@@ -1000,6 +1021,13 @@ class LeggedRobot(BaseTask):
         feet_names = [s for s in self.body_names if self.cfg.asset.foot_name in s]
         left_foot_names = [s for s in self.body_names if self.cfg.asset.left_foot_name in s]
         right_foot_names = [s for s in self.body_names if self.cfg.asset.right_foot_name in s]
+        
+        # TEMP DEBUG: print foot body names
+        if not hasattr(self, "_printed_feet_names"):
+            self._printed_feet_names = True
+            print("left_foot_names:", left_foot_names)
+            print("right_foot_names:", right_foot_names)
+
         penalized_contact_names = []
         for name in self.cfg.asset.penalize_contacts_on:
             penalized_contact_names.extend([s for s in self.body_names if name in s])
