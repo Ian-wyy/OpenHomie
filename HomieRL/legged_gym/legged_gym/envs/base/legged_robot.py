@@ -1200,9 +1200,9 @@ class LeggedRobot(BaseTask):
         right_foot_pos = self.rigid_body_states[:, self.right_foot_indices, :3].clone()
         if self.cfg.terrain.mesh_type == 'plane':
             left_foot_height = torch.mean(left_foot_pos[:, :, 2], dim = -1, keepdim=True)
-            left_foot_height_var = torch.var(left_foot_pos[:, :, 2], dim = -1, keepdim=True)
+            left_foot_height_var = torch.var(left_foot_pos[:, :, 2], dim = -1, keepdim=True, unbiased=False)
             right_foot_height = torch.mean(right_foot_pos[:, :, 2], dim = -1, keepdim=True)
-            right_foot_height_var = torch.var(right_foot_pos[:, :, 2], dim = -1, keepdim=True)
+            right_foot_height_var = torch.var(right_foot_pos[:, :, 2], dim = -1, keepdim=True, unbiased=False)
             return torch.cat((left_foot_height, right_foot_height), dim=-1), torch.cat((left_foot_height_var, right_foot_height_var), dim=-1)
         elif self.cfg.terrain.mesh_type == 'none':
             raise NameError("Can't measure height with terrain mesh type 'none'")
