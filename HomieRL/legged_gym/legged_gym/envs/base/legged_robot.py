@@ -764,11 +764,11 @@ class LeggedRobot(BaseTask):
         """
         
         # TEMP DEBUG: print first 20 dof names once
-        if not hasattr(self, "_printed_dof_order"):
-            self._printed_dof_order = True
-            print("=== DOF order (first 20) ===")
-            for i, name in enumerate(self.dof_names[:20]):
-                print(f"{i:02d}: {name}")
+        # if not hasattr(self, "_printed_dof_order"):
+        #     self._printed_dof_order = True
+        #     print("=== DOF order (first 20) ===")
+        #     for i, name in enumerate(self.dof_names[:20]):
+        #         print(f"{i:02d}: {name}")
 
         
         # get gym GPU state tensors
@@ -848,11 +848,11 @@ class LeggedRobot(BaseTask):
             self.action_scale = self.cfg.control.action_scale * torch.ones(self.num_dof, dtype=torch.float, device=self.device)
 
         # TEMP DEBUG: print action_scale for first 12 dofs
-        if not hasattr(self, "_printed_action_scale"):
-            self._printed_action_scale = True
-            print("=== action_scale for first 12 dofs ===")
-            for i in range(12):
-                print(f"{i:02d}: {self.dof_names[i]} scale={self.action_scale[i].item():.6f}")
+        # if not hasattr(self, "_printed_action_scale"):
+        #     self._printed_action_scale = True
+        #     print("=== action_scale for first 12 dofs ===")
+        #     for i in range(12):
+        #         print(f"{i:02d}: {self.dof_names[i]} scale={self.action_scale[i].item():.6f}")
 
         # joint positions offsets and PD gains
         self.default_dof_pos = torch.zeros(self.num_dof, dtype=torch.float, device=self.device, requires_grad=False)
@@ -882,11 +882,11 @@ class LeggedRobot(BaseTask):
         self.target_heights = torch.ones((self.num_envs), device=self.device) * self.cfg.rewards.base_height_target
         
         # TEMP DEBUG: print action range for first 12 dofs
-        if not hasattr(self, "_printed_action_range"):
-            self._printed_action_range = True
-            print("=== action_min/max (first 12) ===")
-            for i in range(12):
-                print(f"{i:02d}: {self.dof_names[i]} min={self.action_min[0, i].item():.3f} max={self.action_max[0, i].item():.3f}")
+        # if not hasattr(self, "_printed_action_range"):
+        #     self._printed_action_range = True
+        #     print("=== action_min/max (first 12) ===")
+        #     for i in range(12):
+        #         print(f"{i:02d}: {self.dof_names[i]} min={self.action_min[0, i].item():.3f} max={self.action_max[0, i].item():.3f}")
         
         self.random_upper_actions = torch.zeros((self.num_envs, self.num_actions - self.num_lower_dof), device=self.device)
         self.current_upper_actions = torch.zeros((self.num_envs, self.num_actions - self.num_lower_dof), device=self.device)
@@ -1022,10 +1022,10 @@ class LeggedRobot(BaseTask):
         right_foot_names = [s for s in self.body_names if self.cfg.asset.right_foot_name in s]
         
         # TEMP DEBUG: print foot body names
-        if not hasattr(self, "_printed_feet_names"):
-            self._printed_feet_names = True
-            print("left_foot_names:", left_foot_names)
-            print("right_foot_names:", right_foot_names)
+        # if not hasattr(self, "_printed_feet_names"):
+        #     self._printed_feet_names = True
+        #     print("left_foot_names:", left_foot_names)
+        #     print("right_foot_names:", right_foot_names)
 
         penalized_contact_names = []
         for name in self.cfg.asset.penalize_contacts_on:
